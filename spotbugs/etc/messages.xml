@@ -1324,6 +1324,14 @@ the subclass.</p>
 ]]>
     </Details>
   </Detector>
+  <Detector class="edu.umd.cs.findbugs.detect.PublicAttributes">
+    <Details>
+<![CDATA[
+<p>This detector looks for public attributes.
+</p>
+]]>
+    </Details>
+  </Detector>
   <Detector class="edu.umd.cs.findbugs.detect.PublicSemaphores">
     <Details>
 <![CDATA[
@@ -7025,6 +7033,22 @@ just use the constant. Methods detected are:
     ]]>
       </Details>
   </BugPattern>
+  <BugPattern type="PA_PUBLIC_ATTRIBUTES">
+    <ShortDescription>Field is both public and written by a method</ShortDescription>
+    <LongDescription>Field {1} is both public and written by a method</LongDescription>
+    <Details>
+   <![CDATA[
+    <p>
+    Fields must either by public or they should be written by methods. Public fields that are only
+    read by the methods of the class are considered as "parameters" affecting the behavior of the
+    object. However, attributes which are also written by these methods are part of the state of the
+    object. Making these public is a risk that external code changes them causing an inconsistency
+    in the behavior. Consider making them private. (Please note, that constructors, initializers,
+    finalizers, cloners are not considered as a method here.) See SEI-CERT rule OBJ01-J.
+    </p>
+    ]]>
+      </Details>
+  </BugPattern>
   <BugPattern type="PS_PUBLIC_SEMAPHORES">
     <ShortDescription>Class exposes synchronization and semaphores in its public interface</ShortDescription>
     <LongDescription>Class {0} exposes synchronization and semaphores in its public interface</LongDescription>
@@ -8513,6 +8537,7 @@ after the call to initLogging, the logger configuration is lost
   <BugCode abbrev="CD">Circular Dependencies</BugCode>
   <BugCode abbrev="RI">Redundant Interfaces</BugCode>
   <BugCode abbrev="MTIA">Multithreaded Instance Access</BugCode>
+  <BugCode abbrev="PA">Public Attributes</BugCode>
   <BugCode abbrev="PS">Public Semaphores</BugCode>
   <BugCode abbrev="BSHIFT">Bad shift</BugCode>
   <BugCode abbrev="ICAST">Casting from integer values</BugCode>
