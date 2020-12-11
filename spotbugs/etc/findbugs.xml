@@ -563,6 +563,8 @@
                     reports="MTIA_SUSPECT_STRUTS_INSTANCE_FIELD,MTIA_SUSPECT_SERVLET_INSTANCE_FIELD"/>
           <Detector class="edu.umd.cs.findbugs.detect.PublicSemaphores" speed="fast" disabled="true"
                     reports="PS_PUBLIC_SEMAPHORES"/>
+          <Detector class="edu.umd.cs.findbugs.detect.ReturnPrivateAttributes" speed="fast"
+                    reports="RPMA_RETURN_PRIVATE_MUTABLE_ATTRIBUTES"/>
           <Detector class="edu.umd.cs.findbugs.detect.BadUseOfReturnValue" speed="fast"
                     reports="RV_CHECK_FOR_POSITIVE_INDEXOF,RV_DONT_JUST_NULL_CHECK_READLINE"/>
           <Detector class="edu.umd.cs.findbugs.detect.MethodReturnCheck" speed="fast"
@@ -1137,6 +1139,7 @@
           <BugPattern abbrev="MTIA" type="MTIA_SUSPECT_STRUTS_INSTANCE_FIELD" category="STYLE"/>
           <BugPattern abbrev="MTIA" type="MTIA_SUSPECT_SERVLET_INSTANCE_FIELD" category="STYLE"/>
           <BugPattern abbrev="PS" type="PS_PUBLIC_SEMAPHORES" category="STYLE"/>
+          <BugPattern abbrev="RPMA" type="RPMA_RETURN_PRIVATE_MUTABLE_ATTRIBUTES" category="BAD_SECURITY"/>
           <BugPattern abbrev="ICAST" type="ICAST_INT_2_LONG_AS_INSTANT" category="CORRECTNESS"/>
           <BugPattern abbrev="ICAST" type="ICAST_INTEGER_MULTIPLY_CAST_TO_LONG" category="STYLE"/>
           <BugPattern abbrev="ICAST" type="ICAST_IDIV_CAST_TO_DOUBLE" category="STYLE"/>

@@ -1335,6 +1335,14 @@ havoc to the base implementation.
 ]]>
     </Details>
   </Detector>
+  <Detector class="edu.umd.cs.findbugs.detect.ReturnPrivateAttributes">
+    <Details>
+<![CDATA[
+<p>This detector looks for methods returning private mutable attributes.
+</p>
+]]>
+    </Details>
+  </Detector>
   <Detector class="edu.umd.cs.findbugs.detect.MethodReturnCheck">
     <Details>
 <![CDATA[
@@ -7040,6 +7048,17 @@ just use the constant. Methods detected are:
     ]]>
       </Details>
   </BugPattern>
+  <BugPattern type="RPMA_RETURN_PRIVATE_MUTABLE_ATTRIBUTES">
+    <ShortDescription>Return private mutable attribute</ShortDescription>
+    <LongDescription>Return private mutable attribute {0} at {1}</LongDescription>
+    <Details>
+   <![CDATA[
+    <p>
+    Details.
+    </p>
+    ]]>
+      </Details>
+  </BugPattern>
   <BugPattern type="ICAST_INTEGER_MULTIPLY_CAST_TO_LONG">
     <ShortDescription>Result of integer multiplication cast to long</ShortDescription>
     <LongDescription>Result of integer multiplication cast to long in {1}</LongDescription>
@@ -8514,6 +8533,7 @@ after the call to initLogging, the logger configuration is lost
   <BugCode abbrev="RI">Redundant Interfaces</BugCode>
   <BugCode abbrev="MTIA">Multithreaded Instance Access</BugCode>
   <BugCode abbrev="PS">Public Semaphores</BugCode>
+  <BugCode abbrev="RPMA">Return Private Mutable Attributes</BugCode>
   <BugCode abbrev="BSHIFT">Bad shift</BugCode>
   <BugCode abbrev="ICAST">Casting from integer values</BugCode>
   <BugCode abbrev="RE">Regular expressions</BugCode>
