@@ -39,6 +39,12 @@ public class ReturnPrivateAttributes
         fieldCloneUnderCast = null;
 
         if (seen == Const.ARETURN) {
+            if (getClassName().indexOf('$') >= 0)
+                return;
+
+            if (getMethodName().indexOf("access$") >= 0)
+                return;
+
             OpcodeStack.Item item = stack.getStackItem(0);
             XField field = item.getXField();
             if (field == null) {
