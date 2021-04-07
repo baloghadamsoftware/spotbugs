@@ -16,6 +16,7 @@ import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;
 import edu.umd.cs.findbugs.OpcodeStack;
 import edu.umd.cs.findbugs.ba.XField;
+import edu.umd.cs.findbugs.ba.XMethod;
 import edu.umd.cs.findbugs.bcel.OpcodeStackDetector;
 import edu.umd.cs.findbugs.classfile.MethodDescriptor;
 
@@ -57,6 +58,10 @@ public class ReturnPrivateAttributes
                 return;
 
             if (!field.isPrivate() && !field.isProtected())
+                return;
+
+            XMethod method = getXMethod();
+            if (method.isPrivate() || method.isProtected())
                 return;
 
             Field clsField = getClassField(field, getClassName());
