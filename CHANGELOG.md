@@ -4,11 +4,118 @@ This is the changelog for SpotBugs. This follows [Keep a Changelog v1.0.0](http:
 
 Currently the versioning policy of this project follows [Semantic Versioning v2.0.0](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased - 2021-??-??
+## Unreleased - 2022-??-??
+### Fixed
+- Fixed spotbugs build with ecj compiler ([#1903](https://github.com/spotbugs/spotbugs/issues/1903))
+- Moved tests from spotbugs project to spotbugs-tests project ([#1914](https://github.com/spotbugs/spotbugs/issues/1914))
+
+### Added
+* New detector `FindInstanceLockOnSharedStaticData` for new bug type `SSD_DO_NOT_USE_INSTANCE_LOCK_ON_SHARED_STATIC_DATA`. This detector reports a bug if an instance level lock is used to modify a shared static data. (See [SEI CERT rule LCK06-J](https://wiki.sei.cmu.edu/confluence/display/java/LCK06-J.+Do+not+use+an+instance+lock+to+protect+shared+static+data))
+* New rule `PERM_SUPER_NOT_CALLED_IN_GETPERMISSIONS` to warn for custom class loaders who do not call their superclasses' `getPermissions()` in their `getPermissions()` method. This rule based on the SEI CERT rule *SEC07-J Call the superclass's getPermissions() method when writing a custom class loader*. ([#SEC07-J](https://wiki.sei.cmu.edu/confluence/display/java/SEC07-J.+Call+the+superclass%27s+getPermissions%28%29+method+when+writing+a+custom+class+loader))
+
+## 4.5.3 - 2022-01-04
+### Security
+- Bumped log4j from 2.16.0 to 2.17.1 to address [CVE-2021-45105](https://nvd.nist.gov/vuln/detail/CVE-2021-45105) and [CVE-2021-44832](https://nvd.nist.gov/vuln/detail/CVE-2021-44832) ([#1885](https://github.com/spotbugs/spotbugs/pull/1885), [#1897](https://github.com/spotbugs/spotbugs/pull/1897))
+
+### Fixed
+- Remove duplicated logging frameworks from the Eclipse plugin distribution ([#1868](https://github.com/spotbugs/spotbugs/issues/1868))
+- Corrected class name validation to no longer fail for Kotlin classes on class path containing special characters. ([#1883](https://github.com/spotbugs/spotbugs/issues/1883))
+
+## 4.5.2 - 2021-12-13
+### Security
+- Bumped log4j from 2.14.1 to 2.16.0 to address CVE-2021-44228
+
+### Fixed
+- False negative about the rule RV_DONT_JUST_NULL_CHECK_READLINE ([#1821](https://github.com/spotbugs/spotbugs/issues/1821)[#1820](https://github.com/spotbugs/spotbugs/issues/1820)[#1819](https://github.com/spotbugs/spotbugs/issues/1819)[#1818](https://github.com/spotbugs/spotbugs/issues/1818))
+- Updated RV_01_TO_INT to handle float and long checks ([#1518](https://github.com/spotbugs/spotbugs/issues/1518))
+
+## 4.5.1 - 2021-12-08
+### Fixed
+- Ant task does not produce XML anymore ([#1827](https://github.com/spotbugs/spotbugs/issues/1827))
+- Do not emit false positives of `MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR` and `MC_OVERRIDABLE_METHOD_CALL_IN_CLONE` for final classes ([#1812](https://github.com/spotbugs/spotbugs/issues/1812)).
+- Reports cannot be created on Windows platform ([#1842](https://github.com/spotbugs/spotbugs/pull/1842))
+
+## 4.5.0 - 2021-11-05
+### Changed
+- Replace "分析" with "解析" in Japanese document ([#1573](https://github.com/spotbugs/spotbugs/issues/1573))
+- Add a section to document how to integrate find-sec-bugs into spotbugs-maven-plugin ([#540](https://github.com/spotbugs/spotbugs/issues/540))
+- Bump gson from 2.8.8 to 2.8.9 ([#1784](https://github.com/spotbugs/spotbugs/pull/1784))
+- Changes related to dominators analysis in package `edu.umd.cs.findbugs.classfile.engine.bcel` ([#1741](https://github.com/spotbugs/spotbugs/pull/1741)):
+  - `DominatorsAnalysisFactory` renamed to `NonExceptionDominatorsAnalysisFactory` (clarification)
+  - `NonExceptionPostdominatorsAnalysisFactory` renamed to `NonExceptionPostDominatorsAnalysisFactory` (spelling)
+  - `NonImplicitExceptionDominatorsAnalysis` introduced (API consistency)
+
+### Added
+* Rule `DCN_NULLPOINTER_EXCEPTION` covers catching NullPointerExceptions in accordance with SEI Cert rule [ERR08-J](https://wiki.sei.cmu.edu/confluence/display/java/ERR08-J.+Do+not+catch+NullPointerException+or+any+of+its+ancestors) ([#1740](https://github.com/spotbugs/spotbugs/pull/1740))
+* Multiple types of report can be generated in batch. Set multiple commandline options for report configuration like `-html=report/spotbugs.html -xml:withMessages=report/spotbugs.xml`.
+* New rule `REFL_REFLECTION_INCREASES_ACCESSIBILITY_OF_CLASS` to detect public methods instantiating a class they get in their parameter. This rule based on the SEI CERT rule *SEC05-J. Do not use reflection to increase accessibility of classes, methods, or fields*. ([#SEC05-J](https://wiki.sei.cmu.edu/confluence/display/java/SEC05-J.+Do+not+use+reflection+to+increase+accessibility+of+classes%2C+methods%2C+or+fields))
+* New detector `FindOverridableMethodCall` to detect invocation of overridable method in constructors (`MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR`) and clone() method (`MC_OVERRIDABLE_METHOD_CALL_IN_CLONE`), according to SEI CERT rules [MET05-J. Ensure that constructors do not call overridable methods](https://wiki.sei.cmu.edu/confluence/display/java/MET05-J.+Ensure+that+constructors+do+not+call+overridable+methods) and [MET06-J. Do not invoke overridable methods in clone()](https://wiki.sei.cmu.edu/confluence/pages/viewpage.action?pageId=88487921).
+* [Translation of online manual to Brazilian Portuguese (PT-BR)](https://spotbugs.readthedocs.io/pt_BR/latest/).
+
+### Fixed
+* False negative about the rule ES_COMPARING_STRINGS_WITH_EQ ([#1764](https://github.com/spotbugs/spotbugs/issues/1764))
+* False negative about the rule IM_MULTIPLYING_RESULT_OF_IREM ([#1498])(https://github.com/spotbugs/spotbugs/issues/1498)
+
+### Deprecated
+* `-output` commandline option is deprecated. Use commandline options for report configuration like `-xml=spotbugs.xml` instead.
+
+## 4.4.2 - 2021-10-08
+### Changed
+- Add bug code to report in fancy-hist.xsl ([#1688](https://github.com/spotbugs/spotbugs/pull/1688))
+- Bump Saxon-HE from 10.5 to 10.6 ([#1715](https://github.com/spotbugs/spotbugs/pull/1715))
+
+### Fixed
+- Fixed immutable java.lang.Class as being flagged as EI ([#1695](https://github.com/spotbugs/spotbugs/pull/1695))
+- Agree verb with plural subject in the description of
+`SW_SWING_METHODS_INVOKED_IN_SWING_THREAD` ([#1664](https://github.com/spotbugs/spotbugs/pull/1664))
+- Wrong description of the `SE_TRANSIENT_FIELD_OF_NONSERIALIZABLE_CLASS` ([#1664](https://github.com/spotbugs/spotbugs/pull/1664))
+- Fixed java.util.Locale as being flagged as EI  ([#1702](https://github.com/spotbugs/spotbugs/pull/1702))
+- Fixed reference to java.awt.Cursor which caused it to be flagged as EI ([#1702](https://github.com/spotbugs/spotbugs/pull/1702))
+- Treat types with `@com.google.errorprone.annotations.Immutable` as immutable ([#1705](https://github.com/spotbugs/spotbugs/pull/1705))
+- Fix annotation check for `jdk.internal.ValueBased` ([#1706](https://github.com/spotbugs/spotbugs/pull/1706))
+- `DMI_RANDOM_USED_ONLY_ONCE` false positive ([#1539](https://github.com/spotbugs/spotbugs/issues/1539))
+- `NP_NONNULL_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR` false negative ([#1642](https://github.com/spotbugs/spotbugs/issues/1642))
+- Immutable java.util.regex.Pattern as being flagged as EI ([#1695](https://github.com/spotbugs/spotbugs/pull/1738))
+- Resource leak in the JrtfsCodeBase ([#1732](https://github.com/spotbugs/spotbugs/pull/1732))
+
+## 4.4.1 - 2021-09-07
+### Changed
+- Bump gson from 2.8.7 to 2.8.8 ([#1658](https://github.com/spotbugs/spotbugs/pull/1658))
+- Lower `ExitCodes` logger to debug level ([#1661](https://github.com/spotbugs/spotbugs/issues/1661))
+- Fixed SARIF format to be compatible with Github code scanning API requirements ([#1630](https://github.com/spotbugs/spotbugs/issues/1630))
+
+### Fixed
+- Fixed immutable classes in java.net.* as being flagged as EI ([#1653](https://github.com/spotbugs/spotbugs/issues/1653)
+- Classes containing only static methods with setter-like names are no longer considered as mutable ([#1601](https://github.com/spotbugs/spotbugs/issues/1601))
+- Handle all immutable collections in the Guava library as immutable ([#1601](https://github.com/spotbugs/spotbugs/issues/1601))
+- Classes annotated with @Immutable or @jdk.internal.ValueBased are considered as immutable ([#1601](https://github.com/spotbugs/spotbugs/issues/1601))
+- All classes in packages java.time and java.math are now correctly handled as immutable ([#1601](https://github.com/spotbugs/spotbugs/issues/1601))
+
+## 4.4.0 - 2021-08-12
+
+### Fixed
+- Fixed False positives for RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE ([#600](https://github.com/spotbugs/spotbugs/issues/600) and [#1338](https://github.com/spotbugs/spotbugs/issues/1338))
+- Inconsistent bug description on `EQ_COMPARING_CLASS_NAMES` ([#1523](https://github.com/spotbugs/spotbugs/issues/1523))
+- Add a declaration of charset encoding in generated reports ([#1623](https://github.com/spotbugs/spotbugs/pull/1623))
+- Fixed regression in Bug Info view for Eclipse 2021-03+ ([#1477](https://github.com/spotbugs/spotbugs/issues/1477))
+
+### Added
+* New detector `FindBadEndOfStreamCheck` for new bug type `EOS_BAD_END_OF_STREAM_CHECK`. This bug is reported whenever the return value of java.io.FileInputStream.read() or java.io.FileReader.read() is first converted to byte/int and only thereafter checked against -1. (See [SEI CERT rule FIO08-J](https://wiki.sei.cmu.edu/confluence/display/java/FIO08-J.+Distinguish+between+characters+or+bytes+read+from+a+stream+and+-1))
+
+## 4.3.0 - 2021-07-01
+
+### Fixed
+- `MS_EXPOSE_REP` and `EI_EXPOSE_REP` are now reported for code returning a reference to a mutable object indirectly (e.g. via a local variable)
 
 ### Changed
+* Bump ObjectWeb ASM from 9.1 to 9.2 supporting JDK 18 ([#1591](https://github.com/spotbugs/spotbugs/pull/1591))
 * Bump Saxon-HE from 10.3 to 10.5 ([#1513](https://github.com/spotbugs/spotbugs/pull/1513))
+* Bump gson from 2.8.6 to 2.8.7 ([#1556](https://github.com/spotbugs/spotbugs/pull/1556))
 * Function `mutableSignature()` improved and factored out from the `MutableStaticFields` detector
+
+### Added
+* New bugs `MS_EXPOSE_BUF`, `EI_EXPOSE_BUF`, `EI_EXPOSE_STATIC_BUF2` and `EI_EXPOSE_BUF2` by the `FindReturnRef` detector to detect cases where buffers or their backing arrays are exposed (see [SEI CERT rule FIO05-J](https://wiki.sei.cmu.edu/confluence/display/java/FIO05-J.+Do+not+expose+buffers+or+their+backing+arrays+methods+to+untrusted+code))
+*  `MS_EXPOSE_REP`, `EI_EXPOSE_REP`, `EI_EXPOSE_STATIC_REP2` and `EI_EXPOSE_REP2` now report for shallowly copied arrays (using clone()) of mutable objects
 
 ## 4.2.3 - 2021-04-12
 
