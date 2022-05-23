@@ -1,5 +1,5 @@
 package foundOnTheWeb;
-
+ 
 /**
  * http://www.javalobby.org/java/forums/t96352.html
  *
@@ -39,11 +39,11 @@ package foundOnTheWeb;
  */
 public class SynchronizationOnSharedBuiltinConstant {
     static private final String LOCK = "LOCK";
-
+ 
     void someMethod() {
         synchronized (LOCK) {
-
+ 
         }
     }
-
+ 
 }

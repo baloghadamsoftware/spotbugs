@@ -4269,7 +4269,7 @@ synchronized(LOCK) {
 詳細は， <a href="http://www.javalobby.org/java/forums/t96352.html">http://www.javalobby.org/java/forums/t96352.html</a> と <a href="http://jira.codehaus.org/browse/JETTY-352">http://jira.codehaus.org/browse/JETTY-352</a> を参照してください。
 </p>
 <p>
-CERT <a href="https://www.securecoding.cert.org/confluence/display/java/CON08-J.+Do+not+synchronize+on+objects+that+may+be+reused">CON08-J. Do not synchronize on objects that may be reused</a> を参照してください。
+CERT <a href="https://wiki.sei.cmu.edu/confluence/display/java/LCK01-J.+Do+not+synchronize+on+objects+that+may+be+reused">LCK01-J. Do not synchronize on objects that may be reused</a> を参照してください。
 </p>
 ]]>
     </Details>
@@ -4298,7 +4298,7 @@ synchronized(inited) {
 このコードは他の無関係なコードと同じオブジェクトで同期化している可能性があるので，無応答やデッドロックの原因になります。
 </p>
 <p>
-CERT <a href="https://www.securecoding.cert.org/confluence/display/java/CON08-J.+Do+not+synchronize+on+objects+that+may+be+reused">CON08-J. Do not synchronize on objects that may be reused</a> を参照してください。
+CERT <a href="https://wiki.sei.cmu.edu/confluence/display/java/LCK01-J.+Do+not+synchronize+on+objects+that+may+be+reused">LCK01-J. Do not synchronize on objects that may be reused</a> を参照してください。
 </p>
 ]]>
     </Details>
@@ -4352,7 +4352,7 @@ synchronized(count) {
 他の無関係なコードと同じオブジェクトで同期化している可能性があるので，無応答やデッドロックの原因になります。
 </p>
 <p>
-CERT <a href="https://www.securecoding.cert.org/confluence/display/java/CON08-J.+Do+not+synchronize+on+objects+that+may+be+reused">CON08-J. Do not synchronize on objects that may be reused</a> を参照してください。
+CERT <a href="https://wiki.sei.cmu.edu/confluence/display/java/LCK01-J.+Do+not+synchronize+on+objects+that+may+be+reused">LCK01-J. Do not synchronize on objects that may be reused</a> を参照してください。
 </p>
 ]]>
     </Details>
