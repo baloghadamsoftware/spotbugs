@@ -5,6 +5,10 @@ This is the changelog for SpotBugs. This follows [Keep a Changelog v1.0.0](http:
 Currently the versioning policy of this project follows [Semantic Versioning v2.0.0](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased - 2022-??-??
+### Added
+* New detector `FindUndeclaredCheckedExceptions` for new bug type `UCE_DO_NOT_THROW_UNDECLARED_CHECKED_EXCEPTION`. (See [SEI CERT rule ERR06-J](https://wiki.sei.cmu.edu/confluence/display/java/ERR06-J.+Do+not+throw+undeclared+checked+exceptions)) 
+
+## Unreleased - 2022-??-??
 ### Fixed
 - Fixed False positives for `RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE` on try-with-resources with interface references ([#1931](https://github.com/spotbugs/spotbugs/issues/1931))
 - Disabled detector `ThrowingExceptions` by default to avoid many false positives ([#2040](https://github.com/spotbugs/spotbugs/issues/2040))
