@@ -23,6 +23,7 @@ public class FindUndeclaredCheckedExceptionsTest extends AbstractIntegrationTest
 
     }
 
+    @Test
     public void testGoodUCE() {
         performAnalysis("ucetestfiles/GoodCheckedExceptions.class");
 

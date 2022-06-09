@@ -1,3 +1,21 @@
+/*
+ * FindBugs - Find bugs in Java programs
+ * Copyright (C) 2003,2004 University of Maryland
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package edu.umd.cs.findbugs.detect;
 
 import edu.umd.cs.findbugs.*;
@@ -24,9 +42,10 @@ import java.util.regex.Pattern;
 public class FindUndeclaredCheckedExceptions extends OpcodeStackDetector implements StatelessDetector {
     private final BugAccumulator bugAccumulator;
     private final BugReporter bugReporter;
-    private final List<ExceptionThrown> throwList = new ArrayList<>();
-    private final List<String> throwsList = new ArrayList<>();
-    private final List<ExceptionCaught> catchList = new ArrayList<>();
+    private final List<ExceptionThrown> throwList = new LinkedList<>();
+    private final List<String> throwsList = new LinkedList<>();
+    private final List<ExceptionCaught> catchList = new LinkedList<>();
+    private final Pattern space = Pattern.compile(" ");
 
     private static class ExceptionCaught {
         public String exceptionClass;
@@ -150,9 +169,7 @@ public class FindUndeclaredCheckedExceptions extends OpcodeStackDetector impleme
             Method m = getMethod();
             bugReporter.reportSkippedAnalysis(DescriptorFactory.instance().getMethodDescriptor(getClassName(), getMethodName(),
                     getMethodSig(), m.isStatic()));
-        } catch (DataflowAnalysisException e) {
-            bugReporter.logError("Error checking for dead exception store", e);
-        } catch (CFGBuilderException e) {
+        } catch (DataflowAnalysisException | CFGBuilderException e) {
             bugReporter.logError("Error checking for dead exception store", e);
         }
     }
@@ -194,7 +211,6 @@ public class FindUndeclaredCheckedExceptions extends OpcodeStackDetector impleme
 
     @Override
     public void visit(Method method) {
-        final Pattern space = Pattern.compile(" ");
         String m[] = space.split(method.toString());
 
         m[m.length - 1] += ",";
