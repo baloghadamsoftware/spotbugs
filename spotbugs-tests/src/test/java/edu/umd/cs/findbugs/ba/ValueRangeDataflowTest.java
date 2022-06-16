@@ -68,6 +68,9 @@ public class ValueRangeDataflowTest extends AbstractIntegrationTest {
 
             } else if ("Method: ValueRangeDataflow.otherRange(int, short)".equals(outputLines[i])) {
                 checkOtherRange(outputLines, i + 4);
+
+            } else if ("Method: ValueRangeDataflow.constant()".equals(outputLines[i])) {
+                checkConstant(outputLines, i + 4);
             }
         }
     }
@@ -245,6 +248,16 @@ public class ValueRangeDataflowTest extends AbstractIntegrationTest {
                         Integer.MAX_VALUE + "\\].*"));
                 assertTrue(outputLines[i].matches("BASIC BLOCK: 5 Variable ranges:.*\\[" + Short.MIN_VALUE + ", " +
                         Short.MAX_VALUE + "\\].*"));
+                return;
+            }
+        }
+        assertTrue(false);
+    }
+
+    private void checkConstant(String[] outputLines, int n) {
+        for (int i = n; i < outputLines.length; ++i) {
+            if (outputLines[i].length() >= 9 && "EDGE(1)".equals(outputLines[i].substring(2, 9))) {
+                assertTrue(outputLines[i].matches("  EDGE\\(1\\) type RETURN.*Variable ranges:.*\\{100\\}.*"));
                 return;
             }
         }
