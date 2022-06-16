@@ -116,4 +116,11 @@ public class ValueRangeDataflow {
          }
          return n + m + k;
      }
+
+     // Constants
+
+     int constant() {
+         int n = 100;
+         return n;
+     }
 }

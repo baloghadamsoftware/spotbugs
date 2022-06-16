@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.apache.bcel.Const;
 import org.apache.bcel.classfile.Constant;
 import org.apache.bcel.classfile.ConstantCP;
 import org.apache.bcel.classfile.ConstantNameAndType;
@@ -209,6 +210,41 @@ public class ValueRangeAnalysis extends ForwardDataflowAnalysis<ValueRangeMap> {
     public void transferInstruction(InstructionHandle handle, BasicBlock basicBlock, ValueRangeMap fact)
             throws DataflowAnalysisException {
         fact.setBranch(null);
+        Instruction instr = handle.getInstruction();
+        if (instr instanceof ConstantPushInstruction) {
+            ConstantPushInstruction push = (ConstantPushInstruction) instr;
+            ValueNumber vna = vnaDataflow.getFactAfterLocation(new Location(handle, basicBlock)).getStackValue(0);
+            if (vna == null) {
+                return;
+            }
+
+            String signature = null;
+            switch (instr.getOpcode()) {
+            case Const.ICONST_0:
+            case Const.ICONST_1:
+            case Const.ICONST_2:
+            case Const.ICONST_3:
+            case Const.ICONST_4:
+            case Const.ICONST_5:
+                signature = "I";
+                break;
+            case Const.LCONST_0:
+            case Const.LCONST_1:
+                signature = "J";
+                break;
+            case Const.BIPUSH:
+                signature = "B";
+                break;
+            case Const.SIPUSH:
+                signature = "S";
+                break;
+            }
+            if (signature == null) {
+                return;
+            }
+
+            fact.setRange(vna, new LongRangeSet(signature).eq(push.getValue().longValue()));
+        }
     }
 
     @Override
