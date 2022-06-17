@@ -68,6 +68,15 @@ public class ValueRangeDataflowTest extends AbstractIntegrationTest {
 
             } else if ("Method: ValueRangeDataflow.otherRange(int, short)".equals(outputLines[i])) {
                 checkOtherRange(outputLines, i + 4);
+
+            } else if ("Method: ValueRangeDataflow.inc1(int)".equals(outputLines[i])) {
+                checkInc1(outputLines, i + 4);
+            } else if ("Method: ValueRangeDataflow.inc10(int)".equals(outputLines[i])) {
+                checkInc10(outputLines, i + 4);
+            } else if ("Method: ValueRangeDataflow.dec1(int)".equals(outputLines[i])) {
+                checkDec1(outputLines, i + 4);
+            } else if ("Method: ValueRangeDataflow.dec10(int)".equals(outputLines[i])) {
+                checkDec10(outputLines, i + 4);
             }
         }
     }
@@ -245,6 +254,50 @@ public class ValueRangeDataflowTest extends AbstractIntegrationTest {
                         Integer.MAX_VALUE + "\\].*"));
                 assertTrue(outputLines[i].matches("BASIC BLOCK: 5 Variable ranges:.*\\[" + Short.MIN_VALUE + ", " +
                         Short.MAX_VALUE + "\\].*"));
+                return;
+            }
+        }
+        assertTrue(false);
+    }
+
+    private void checkInc1(String[] outputLines, int n) {
+        for (int i = n; i < outputLines.length; ++i) {
+            if (outputLines[i].length() >= 9 && "EDGE(6)".equals(outputLines[i].substring(2, 9))) {
+                assertTrue(outputLines[i].matches("  EDGE\\(6\\) type RETURN.*Variable ranges:.*\\{" + Integer.MIN_VALUE +
+                        "\\}\\+\\[1, 1000\\]\\+\\[10002, " + Integer.MAX_VALUE + "\\].*"));
+                return;
+            }
+        }
+        assertTrue(false);
+    }
+
+    private void checkInc10(String[] outputLines, int n) {
+        for (int i = n; i < outputLines.length; ++i) {
+            if (outputLines[i].length() >= 9 && "EDGE(6)".equals(outputLines[i].substring(2, 9))) {
+                assertTrue(outputLines[i].matches("  EDGE\\(6\\) type RETURN.*Variable ranges:.*\\[" + Integer.MIN_VALUE +
+                        ", " + (Integer.MIN_VALUE + 9) + "\\]\\+\\[10, 1009\\]\\+\\[10011, " + Integer.MAX_VALUE + "\\].*"));
+                return;
+            }
+        }
+        assertTrue(false);
+    }
+
+    private void checkDec1(String[] outputLines, int n) {
+        for (int i = n; i < outputLines.length; ++i) {
+            if (outputLines[i].length() >= 9 && "EDGE(6)".equals(outputLines[i].substring(2, 9))) {
+                assertTrue(outputLines[i].matches("  EDGE\\(6\\) type RETURN.*Variable ranges:.*\\[" + Integer.MIN_VALUE +
+                        ", -10002\\]\\+\\[-1000, -1\\]\\+\\{" + Integer.MAX_VALUE + "\\}.*"));
+                return;
+            }
+        }
+        assertTrue(false);
+    }
+
+    private void checkDec10(String[] outputLines, int n) {
+        for (int i = n; i < outputLines.length; ++i) {
+            if (outputLines[i].length() >= 9 && "EDGE(6)".equals(outputLines[i].substring(2, 9))) {
+                assertTrue(outputLines[i].matches("  EDGE\\(6\\) type RETURN.*Variable ranges:.*\\[" + Integer.MIN_VALUE +
+                        ", -10011\\]\\+\\[-1009, -10\\]\\+\\[" + (Integer.MAX_VALUE - 9) + ", " + Integer.MAX_VALUE + "\\].*"));
                 return;
             }
         }
