@@ -38,6 +38,7 @@ import org.apache.bcel.generic.ARRAYLENGTH;
 import org.apache.bcel.generic.CPInstruction;
 import org.apache.bcel.generic.ConstantPushInstruction;
 import org.apache.bcel.generic.GETFIELD;
+import org.apache.bcel.generic.IINC;
 import org.apache.bcel.generic.INVOKEVIRTUAL;
 import org.apache.bcel.generic.IfInstruction;
 import org.apache.bcel.generic.Instruction;
@@ -209,6 +210,17 @@ public class ValueRangeAnalysis extends ForwardDataflowAnalysis<ValueRangeMap> {
     public void transferInstruction(InstructionHandle handle, BasicBlock basicBlock, ValueRangeMap fact)
             throws DataflowAnalysisException {
         fact.setBranch(null);
+        Instruction instr = handle.getInstruction();
+        if (instr instanceof IINC) {
+            IINC iinc = (IINC) instr;
+            ValueNumber vna = vnaDataflow.getFactAtLocation(new Location(handle, basicBlock)).getValue(iinc.getIndex());
+            if (vna != null) {
+                LongRangeSet range = fact.getRange(vna);
+                if (range != null) {
+                    fact.setRange(vna, range.shift(iinc.getIncrement()));
+                }
+            }
+        }
     }
 
     @Override
@@ -468,10 +480,14 @@ public class ValueRangeAnalysis extends ForwardDataflowAnalysis<ValueRangeMap> {
         private InstructionHandle next;
         private final CFG cfg;
 
-        public BackIterator(CFG cfg, BasicBlock block) {
-            this.block = block;
+        public BackIterator(CFG cfg, BasicBlock block, InstructionHandle handle) {
+            this.block = block;;
             this.cfg = cfg;
-            this.next = block.getLastInstruction();
+            this.next = handle;
+        }
+
+        public BackIterator(CFG cfg, BasicBlock block) {
+            this(cfg, block, block.getLastInstruction());
         }
 
         @Override

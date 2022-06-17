@@ -344,6 +344,39 @@ public class LongRangeSet implements Iterable<LongRangeSet> {
         return this;
     }
 
+    public LongRangeSet shift(int increment) {
+        if (increment == 0) {
+            return this;
+        }
+
+        LongRangeSet result = new LongRangeSet(this.range);
+        for (SortedMap.Entry<Long, Long> entry : rangeMap.entrySet()) {
+            long low = entry.getKey() + increment;
+            long high = entry.getValue() + increment;
+            if (low < range.min) {
+                low += range.max - range.min + 1;
+            }
+            if (low > range.max) {
+                low -= range.max - range.min + 1;
+            }
+            if (high < range.min) {
+                high += range.max - range.min + 1;
+            }
+            if (high > range.max) {
+                high -= range.max - range.min + 1;
+            }
+
+            if (low <= high) {
+                result.add(low, high);
+            } else {
+                result.add(range.min, high);
+                result.add(low, range.max);
+            }
+        }
+
+        return result;
+    }
+
     public boolean same(LongRangeSet rangeSet) {
         return rangeMap.equals(rangeSet.rangeMap);
     }

@@ -215,4 +215,96 @@ public class LongRangeSetTest {
         LongRangeSet set4 = set1.add(set2).add(set3);
         assertTrue("[0, 20]".equals(set4.toString()));
     }
+
+    @Test
+    public void testShiftLFullLong() {
+        LongRangeSet set1 = new LongRangeSet("J");
+        LongRangeSet set2 = set1.shift(-10);
+        assertTrue(("[" + Long.MIN_VALUE + ", " + Long.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftRFullLong() {
+        LongRangeSet set1 = new LongRangeSet("J");
+        LongRangeSet set2 = set1.shift(+10);
+        assertTrue(("[" + Long.MIN_VALUE + ", " + Long.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftLFullInt() {
+        LongRangeSet set1 = new LongRangeSet("I");
+        LongRangeSet set2 = set1.shift(-10);
+        assertTrue(("[" + Integer.MIN_VALUE + ", " + Integer.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftRFullInt() {
+        LongRangeSet set1 = new LongRangeSet("I");
+        LongRangeSet set2 = set1.shift(+10);
+        assertTrue(("[" + Integer.MIN_VALUE + ", " + Integer.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftLBottomLong() {
+        LongRangeSet set1 = new LongRangeSet("J").le(0);
+        LongRangeSet set2 = set1.shift(-10);
+        assertTrue(("[" + Long.MIN_VALUE + ", -10]+[" + (Long.MAX_VALUE - 9) + ", " + Long.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftRTopLong() {
+        LongRangeSet set1 = new LongRangeSet("J").ge(0);
+        LongRangeSet set2 = set1.shift(+10);
+        assertTrue(("[" + Long.MIN_VALUE + ", " + (Long.MIN_VALUE + 9) + "]+[10, " + Long.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftLBottomInt() {
+        LongRangeSet set1 = new LongRangeSet("I").le(0);
+        LongRangeSet set2 = set1.shift(-10);
+        assertTrue(("[" + Integer.MIN_VALUE + ", -10]+[" + (Integer.MAX_VALUE - 9) + ", " + Integer.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftRTopInt() {
+        LongRangeSet set1 = new LongRangeSet("I").ge(0);
+        LongRangeSet set2 = set1.shift(+10);
+        assertTrue(("[" + Integer.MIN_VALUE + ", " + (Integer.MIN_VALUE + 9) + "]+[10, " + Integer.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftLMultiLong() {
+        LongRangeSet set1 = new LongRangeSet("J").le(-100);
+        set1.add(new LongRangeSet("J").ge(-10).le(10));
+        set1.add(new LongRangeSet("J").ge(100));
+        LongRangeSet set2 = set1.shift(-10);
+        assertTrue(("[" + Long.MIN_VALUE + ", -110]+[-20, 0]+[90, " + Long.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftRMultiLong() {
+        LongRangeSet set1 = new LongRangeSet("J").le(-100);
+        set1.add(new LongRangeSet("J").ge(-10).le(10));
+        set1.add(new LongRangeSet("J").ge(100));
+        LongRangeSet set2 = set1.shift(+10);
+        assertTrue(("[" + Long.MIN_VALUE + ", -90]+[0, 20]+[110, " + Long.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftLMultiInt() {
+        LongRangeSet set1 = new LongRangeSet("I").le(-100);
+        set1.add(new LongRangeSet("I").ge(-10).le(10));
+        set1.add(new LongRangeSet("I").ge(100));
+        LongRangeSet set2 = set1.shift(-10);
+        assertTrue(("[" + Integer.MIN_VALUE + ", -110]+[-20, 0]+[90, " + Integer.MAX_VALUE + "]").equals(set2.toString()));
+    }
+
+    @Test
+    public void testShiftRMultiInt() {
+        LongRangeSet set1 = new LongRangeSet("I").le(-100);
+        set1.add(new LongRangeSet("I").ge(-10).le(10));
+        set1.add(new LongRangeSet("I").ge(100));
+        LongRangeSet set2 = set1.shift(+10);
+        assertTrue(("[" + Integer.MIN_VALUE + ", -90]+[0, 20]+[110, " + Integer.MAX_VALUE + "]").equals(set2.toString()));
+    }
 }

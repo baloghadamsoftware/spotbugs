@@ -116,4 +116,38 @@ public class ValueRangeDataflow {
          }
          return n + m + k;
      }
+
+     // Arithmetic operations
+
+     int inc1(int n) {
+        if (n < 0 || (n >= 1000 && n <= 10000)) {
+            return 0;
+        }
+        ++n;
+        return n;
+     }
+
+     int inc10(int n) {
+        if (n < 0 || (n >= 1000 && n <= 10000)) {
+            return 0;
+        }
+        n += 10;
+        return n;
+     }
+
+     int dec1(int n) {
+        if (n > 0 || (n <= -1000 && n >= -10000)) {
+            return 0;
+        }
+        --n;
+        return n;
+     }
+
+     int dec10(int n) {
+        if (n > 0 || (n <= -1000 && n >= -10000)) {
+            return 0;
+        }
+        n -= 10;
+        return n;
+     }
 }
