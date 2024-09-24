@@ -1,7 +1,6 @@
 package exceptionInfo;
 
 import java.net.BindException;
-import java.net.SocketAddress;
 
 import java.io.*;
 import java.net.*;
