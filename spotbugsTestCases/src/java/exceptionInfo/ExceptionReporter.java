@@ -6,7 +6,7 @@ class ExceptionReporterPermission extends Permission {
 
     public ExceptionReporterPermission(String name) {
         super(name);
-        //TODO Auto-generated constructor stub
+        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -33,10 +33,9 @@ class ExceptionReporterPermission extends Permission {
         throw new UnsupportedOperationException("Unimplemented method 'getActions'");
     }
     // ...
-  }
+}
 
-
-  public class ExceptionReporter {
+public class ExceptionReporter {
 
     // Exception reporter that prints the exception
     // to the console (used as default)

@@ -1,7 +1,5 @@
 package exceptionInfo;
 
-import java.net.BindException;
-
 import java.io.*;
 import java.net.*;
 
@@ -10,7 +8,8 @@ public class BadBindException {
     public void badBindException1() throws IOException {
         String ip="1";
         int port=1;
-        Socket socket = new Socket(ip, port);
+        ServerSocket socket = new ServerSocket(1);
+        socket.bind(new InetSocketAddress(port));
     }
 
     public void badBindException2() throws IOException {
