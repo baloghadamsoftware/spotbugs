@@ -19,6 +19,7 @@ public class BadJarException {
     public void badJE12() throws IOException{
         try{
             JarFile jf=new JarFile(file);
+            jf.getInputStream(null);
         }
         catch(JarException e){
             throw new IOException("bad jarfile",e);

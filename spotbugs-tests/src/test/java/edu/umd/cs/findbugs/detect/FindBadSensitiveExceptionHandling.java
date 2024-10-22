@@ -72,9 +72,6 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
 
         for (BugInstance bugInstance : bugCollection) {
             for (Map.Entry<String, BugInstanceMatcher> matcher : bugInstances.entrySet()) {
-                if (bugInstance.getType() == "IEH_INSECURE_EXCEPTION_HANDLING") {
-                    throw new AssertionError("van ilyen");
-                }
                 if (matcher.getValue().matches(bugInstance)) {
                     bugValues.replace(matcher.getKey(), true);
                     break;

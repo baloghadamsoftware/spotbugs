@@ -8,6 +8,7 @@ public class BadMissingResourceException {
     
     public void badMRE1()throws MissingResourceException{
         ResourceBundle resources=ResourceBundle.getBundle("resources");
+        resources.getObject(null);
     }
     
     public void badMRE2() throws RuntimeException{
