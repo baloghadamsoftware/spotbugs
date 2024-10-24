@@ -8,7 +8,7 @@ public class BadInsufficientResourcesException {
     
     public void badIRE1()throws NamingException{
         Context ctxt=new InitialContext();
-        ctxt.lookup(input);
+        ctxt.lookup(input); //interface ezért nem dob bugot, konkrét implementációt kéne ide írni
     }
 
     public void badIRE2()throws SecurityIOException{
