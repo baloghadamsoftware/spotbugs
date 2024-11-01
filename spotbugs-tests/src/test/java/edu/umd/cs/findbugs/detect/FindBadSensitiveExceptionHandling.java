@@ -4,11 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -149,7 +144,7 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
             }
         }
 
-        try {
+        /* try {
             BufferedWriter bw = new BufferedWriter(
                     new OutputStreamWriter(new FileOutputStream("C:/Users/Loci/Documents/logs/logt.txt"),
                             StandardCharsets.UTF_8));
@@ -157,7 +152,7 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
             bw.append(bugValues.toString());
         } catch (IOException e) {
             throw new RuntimeException("Fos a fajlbairas");
-        }
+        } */
 
         assertTrueAll(bugValues.get("BadFileNotFoundException1"));
         assertTrueAll(bugValues.get("BadSQLException1"));

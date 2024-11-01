@@ -16,7 +16,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 
+
 import org.apache.bcel.Const;
+import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.CodeException;
 import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.classfile.ConstantPool;
@@ -66,7 +68,7 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     if (this.getDottedClassName().equals("exceptionInfo.BadSQLException")
                             && this.getMethodName().equals("badSQLE1")) {
                         bw = new BufferedWriter(
-                                new OutputStreamWriter(new FileOutputStream("C:/Users/Loci/Documents/logs/log0.txt"),
+                                new OutputStreamWriter(new FileOutputStream("C:/logs/log0.txt"),
                                         StandardCharsets.UTF_8));
                         bw.append("mukodik a logolas\n");
                         found = true;
@@ -195,7 +197,7 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
     }
 
     private void doesItRethrow(String call) {
-        byte[] code = this.getCode().getCode();
+        Code code = this.getCode();
         int regIndex = this.getPC();
         String handledException = exceptions.get(call);
 
@@ -208,6 +210,26 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         exceptions.sort((ex1, ex2) -> {
             return ex1.getHandlerPC() - ex2.getHandlerPC();
         });
+        RethrowFinder rw = new RethrowFinder(bugAccumulator);
+
+        ConstantPool cpool = getConstantPool();
+
+        for (int i = 1; i <= exceptions.size(); i++) {
+            Code exCode = new Code(code);
+            int index = exceptions.get(i - 1).getCatchType();
+            if (((ConstantClass) (cpool.getConstant(index))).getBytes(cpool).equals(handledException)) {
+                exCode.setCode(trimByteCode(exceptions.get(index).getHandlerPC(), exceptions.get(index + 1).getHandlerPC(), code.getCode()));
+                rw.visit(exCode);
+            }
+        }
+    }
+
+    private byte[] trimByteCode(int startPC, int endPC, byte[] code) {
+        byte[] res = new byte[endPC - startPC];
+        for (int i = startPC; i < endPC; i++) {
+            res[i] = code[i];
+        }
+        return res;
     }
 
     private class RethrowFinder extends OpcodeStackDetector {
@@ -230,7 +252,7 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     if (this.getDottedClassName().equals("exceptionInfo.BadSQLException")
                             && this.getMethodName().equals("badSQLE1")) {
                         bw = new BufferedWriter(
-                                new OutputStreamWriter(new FileOutputStream("C:/Users/Loci/Documents/logs/logr.txt"),
+                                new OutputStreamWriter(new FileOutputStream("C:/logs/logr.txt"),
                                         StandardCharsets.UTF_8));
                         bw.append("mukodik a logolas\n");
                         found = true;
@@ -260,6 +282,14 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     BugInstance bug = new BugInstance(this, "IEH_INSECURE_EXCEPTION_HANDLING", LOW_PRIORITY)
                             .addClassAndMethod(this).addString("sensitive exception rethrown");
                     bugAccumulator.accumulateBug(bug, this);
+                    try {
+                        if (bw != null)
+                            bw.append("bugReported: " + bug.toString() + "line: "
+                                    + SourceLineAnnotation.fromVisitedInstruction(this).toString()
+                                    + "\n");
+                    } catch (IOException e) {
+                        throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
+                    }
                 }
             }
         }
