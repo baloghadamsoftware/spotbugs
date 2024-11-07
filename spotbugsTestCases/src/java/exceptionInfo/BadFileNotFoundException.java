@@ -21,7 +21,6 @@ class BadFileNotFoundException {
     try {
       FileInputStream fis = new FileInputStream(System.getenv("APPDATA") + input);
     } catch (FileNotFoundException e) {
-      // Log the exception
       throw new IOException("Unable to retrieve file", e);
     }
   }

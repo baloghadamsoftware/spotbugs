@@ -15,16 +15,6 @@ import edu.umd.cs.findbugs.test.matcher.BugInstanceMatcherBuilder;
 
 public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
 
-    private class Tuple<E, K> {
-        public E val1;
-        public K val2;
-
-        public Tuple(E val1, K val2) {
-            this.val1 = val1;
-            this.val2 = val2;
-        }
-    }
-
     private static Map<String, BugInstanceMatcher[]> bugInstances = new HashMap<String, BugInstanceMatcher[]>();
     private Map<String, Boolean[]> bugValues = new HashMap<String, Boolean[]>();
 

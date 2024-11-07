@@ -8,6 +8,8 @@ import edu.umd.cs.findbugs.OpcodeStack;
 import edu.umd.cs.findbugs.SourceLineAnnotation;
 import edu.umd.cs.findbugs.ba.XMethod;
 import edu.umd.cs.findbugs.bcel.OpcodeStackDetector;
+import edu.umd.cs.findbugs.classfile.CheckedAnalysisException;
+import edu.umd.cs.findbugs.classfile.ClassDescriptor;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -15,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
-
 
 import org.apache.bcel.Const;
 import org.apache.bcel.classfile.Code;
@@ -39,9 +40,13 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         "javax.naming.Context.lookup", "java.util.ResourceBundle.getBundle", "java.util.ResourceBundle.getObject",
         "java.sql.DriverManager.getConnection", "java.sql.DriverManager.getDriver",
         "java.sql.DriverManager.registerDriver",
-        "java.sql.DriverManager.deregisterDriver" };
+        "java.sql.DriverManager.deregisterDriver",
+        "java.io.FileOutputStream.<init>",
+        "java.io.RandomAccessFile.<init>"
+    };
 
     private HashMap<String, String> exceptions = new HashMap<String, String>();
+    private ArrayList<ExceptionRethrowFinder> possibleExceptionRethrows = new ArrayList<ExceptionRethrowFinder>();
 
     public FindInsecureExceptionHandling(BugReporter bugReporter) {
         this.bugAccumulator = new BugAccumulator(bugReporter);
@@ -58,6 +63,8 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         exceptions.put("java.sql.DriverManager.getDriver", "java/sql/SQLException");
         exceptions.put("java.sql.DriverManager.registerDriver", "java/sql/SQLException");
         exceptions.put("java.sql.DriverManager.deregisterDriver", "java/sql/SQLException");
+        exceptions.put("java.io.FileOutputStream.<init>", "java/io/FileNotFoundException");
+        exceptions.put("java.io.RandomAccessFile.<init>", "java/io/FileNotFoundException");
     }
 
     @Override
@@ -65,8 +72,8 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         if (!found) {
             try {
                 try {
-                    if (this.getDottedClassName().equals("exceptionInfo.BadSQLException")
-                            && this.getMethodName().equals("badSQLE1")) {
+                    if (this.getDottedClassName().equals("exceptionInfo.BadFileNotFoundException")
+                            && this.getMethodName().equals("badFileInputStream2")) {
                         bw = new BufferedWriter(
                                 new OutputStreamWriter(new FileOutputStream("C:/logs/log0.txt"),
                                         StandardCharsets.UTF_8));
@@ -74,27 +81,28 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                         found = true;
                     }
                 } catch (IOException e) {
-                    throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
                 }
                 if (bw != null)
                     bw.append(this.getDottedClassName() + " "
                             + this.getMethodName() + "\n");
             } catch (IOException e) {
-                throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
             }
         }
         if (seen == Const.INVOKESPECIAL || seen == Const.INVOKEVIRTUAL || seen == Const.INVOKESTATIC) {
-
-            try {
-                if (bw != null)
-                    bw.append("InvokeSpecial seen\n");
-            } catch (IOException e) {
-                throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
-            }
-            // cpStack = stackToArray(stack);
             seenInvoke = true;
         } else {
             seenInvoke = false;
+        }
+
+        for (int i = 0; i < possibleExceptionRethrows.size(); i++) {
+            ExceptionRethrowFinder rf = possibleExceptionRethrows.get(i);
+            if (!rf.isFinished()) {
+                if (rf.startPC <= this.getPC())
+                    rf.sawOpcode(seen);
+            } else {
+                possibleExceptionRethrows.remove(rf);
+                i--;
+            }
         }
     }
 
@@ -103,12 +111,6 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         super.afterOpcode(seen);
         if (!seenInvoke)
             return;
-        try {
-            if (bw != null)
-                bw.append("afteropcodeInvokeSpecialSeenIsTrue\n");
-        } catch (IOException e) {
-            throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
-        }
         if (seen == Const.INVOKESPECIAL || seen == Const.INVOKEVIRTUAL || seen == Const.INVOKESTATIC) {
 
             exT = this.getCode().getExceptionTable();
@@ -117,14 +119,12 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
             String methodName = this.getNameConstantOperand();
             XMethod method = this.getXMethodOperand();
 
-            String sourceSig = className + "." + methodName; // StringBuilderre le lehetne
-                                                             // cserélni
+            String sourceSig = className + "." + methodName;
 
             try {
                 if (bw != null)
                     bw.append("sig: " + sourceSig + " " + "\n");
             } catch (IOException e) {
-                throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
             }
 
             Optional<String> possibleSensitiveCall = Arrays.stream(SensitiveCalls)
@@ -137,7 +137,6 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     if (bw != null)
                         bw.append("right signature found\n");
                 } catch (IOException e) {
-                    throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
                 }
 
                 if (!isHandled(call)) {
@@ -150,10 +149,9 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                                     + SourceLineAnnotation.fromVisitedInstruction(this).toString()
                                     + "\n");
                     } catch (IOException e) {
-                        throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
                     }
                 } else {
-
+                    addExceptionToCheckForRethrow(call);
                 }
             }
         }
@@ -191,12 +189,11 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
             if (bw != null)
                 bw.append("exception handled: " + handled + "\n");
         } catch (IOException e) {
-            throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
         }
         return handled;
     }
 
-    private void doesItRethrow(String call) {
+    private void addExceptionToCheckForRethrow(String call) {
         Code code = this.getCode();
         int regIndex = this.getPC();
         String handledException = exceptions.get(call);
@@ -210,86 +207,120 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         exceptions.sort((ex1, ex2) -> {
             return ex1.getHandlerPC() - ex2.getHandlerPC();
         });
-        RethrowFinder rw = new RethrowFinder(bugAccumulator);
 
         ConstantPool cpool = getConstantPool();
 
         for (int i = 1; i <= exceptions.size(); i++) {
-            Code exCode = new Code(code);
+
             int index = exceptions.get(i - 1).getCatchType();
-            if (((ConstantClass) (cpool.getConstant(index))).getBytes(cpool).equals(handledException)) {
-                exCode.setCode(trimByteCode(exceptions.get(index).getHandlerPC(), exceptions.get(index + 1).getHandlerPC(), code.getCode()));
-                rw.visit(exCode);
+            if (index == 0 || ((ConstantClass) (cpool.getConstant(index))).getBytes(cpool).equals(handledException)) {
+
+                possibleExceptionRethrows.add(new ExceptionRethrowFinder(regIndex, exceptions.get(i - 1).getHandlerPC(),
+                        i < exceptions.size() ? exceptions.get(i).getHandlerPC() : -1, this));
+                try {
+                    if (bw != null)
+                        bw.append("added ex to possibleExceptionRethrows, size: " + possibleExceptionRethrows.size()
+                                + "\n");
+                } catch (IOException e) {
+                }
             }
         }
     }
 
-    private byte[] trimByteCode(int startPC, int endPC, byte[] code) {
-        byte[] res = new byte[endPC - startPC];
-        for (int i = startPC; i < endPC; i++) {
-            res[i] = code[i];
-        }
-        return res;
-    }
+    private class ExceptionRethrowFinder {
 
-    private class RethrowFinder extends OpcodeStackDetector {
-
-        private boolean first = true;
         private int varIndex = -1;
-        private boolean aloadSeen = false;
-        private BugAccumulator bugAccumulator;
+        private boolean exceptionLoaded = false;
+        private boolean exceptionWrapped = false;
+        private boolean end = false;
+        private boolean first = true;
 
-        private BufferedWriter bw = null;
+        private final int originalPC;
+        private final int startPC;
+        private final int endPC;
+        private final OpcodeStackDetector original;
 
-        public RethrowFinder(BugAccumulator bugAccumulator) {
-            this.bugAccumulator = bugAccumulator;
+        public ExceptionRethrowFinder(int originalPC, int startPC, int endPC, OpcodeStackDetector original) {
+            this.originalPC = originalPC;
+            this.startPC = startPC;
+            this.endPC = endPC;
+            this.original = original;
         }
 
-        @Override
+        public int getStartPC() {
+            return this.startPC;
+        }
+
+        public int getEndPC() {
+            return this.endPC;
+        }
+
+        public boolean isFinished() {
+            return this.end;
+        }
+
         public void sawOpcode(int seen) {
-            if (first) {
-                try {
-                    if (this.getDottedClassName().equals("exceptionInfo.BadSQLException")
-                            && this.getMethodName().equals("badSQLE1")) {
-                        bw = new BufferedWriter(
-                                new OutputStreamWriter(new FileOutputStream("C:/logs/logr.txt"),
-                                        StandardCharsets.UTF_8));
-                        bw.append("mukodik a logolas\n");
-                        found = true;
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
-                }
+
+            if (original.getPC() >= this.endPC && this.endPC != -1)
+                this.end = true;
+            if (this.end)
+                return;
+
+            if (this.first) {
 
                 if (seen == Const.ASTORE) {
-                    varIndex = this.getRegisterOperand();
+                    varIndex = original.getRegisterOperand();
 
-                    try {
-                        if (bw != null)
-                            bw.append("varIndex: " + varIndex + "\n");
-                    } catch (IOException e) {
-                        throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
-                    }
                 } else {
                     varIndex = convertStoreOpToNumber(seen);
+                    if (varIndex == -1)
+                        end = true;
                 }
+                try {
+                    if (bw != null)
+                        bw.append("ASTORE seen, varIndex: " + varIndex + "\n");
+                } catch (IOException e) {
+                }
+                this.first = false;
             } else {
-                if (seen == Const.ALOAD && varIndex == this.getRegisterOperand())
-                    aloadSeen = true;
+                if (exceptionLoaded && seen == Const.INVOKESPECIAL) {
+                    ClassDescriptor className = original.getClassDescriptorOperand();
+                    String stringClassName = className.toString();
+                    int i = 0;
+                    try {
+                        while (!stringClassName.equals("java/lang/Object") && i < 20) {
+                            className = className.getXClass().getSuperclassDescriptor();
+                            if (className == null)
+                                break;
+                            stringClassName = className.toString();
+                            if (stringClassName.equals("java/lang/Exception")) {
+                                exceptionWrapped = true;
+                                break;
+                            }
+                            i++;
+                        }
+                    } catch (CheckedAnalysisException e) {
+                        end = true;
+                    }
+
+                } else if (seen == Const.ALOAD && varIndex == original.getRegisterOperand())
+                    exceptionLoaded = true;
                 else if (convertLoadOpToNumber(seen) == varIndex)
-                    aloadSeen = true;
-                else if (seen == Const.ATHROW && aloadSeen) {
-                    BugInstance bug = new BugInstance(this, "IEH_INSECURE_EXCEPTION_HANDLING", LOW_PRIORITY)
-                            .addClassAndMethod(this).addString("sensitive exception rethrown");
-                    bugAccumulator.accumulateBug(bug, this);
+                    exceptionLoaded = true;
+                else if (seen == Const.ATHROW && exceptionWrapped) {
+                    BugInstance bug = new BugInstance(original, "IEH_INSECURE_EXCEPTION_HANDLING", LOW_PRIORITY)
+                            .addClassAndMethod(original).addString("sensitive exception rethrown");
+                    bugAccumulator.accumulateBug(bug, original);
                     try {
                         if (bw != null)
                             bw.append("bugReported: " + bug.toString() + "line: "
-                                    + SourceLineAnnotation.fromVisitedInstruction(this).toString()
+                                    + SourceLineAnnotation.fromVisitedInstruction(original).toString()
                                     + "\n");
                     } catch (IOException e) {
-                        throw new RuntimeException("HELO rossz fajlbairas" + e.getMessage());
                     }
+                    end = true;
+                } else if (seen == Const.GOTO || seen == Const.RETURN) {
+                    end = true;
                 }
             }
         }
@@ -324,5 +355,4 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
             }
         }
     }
-
 }

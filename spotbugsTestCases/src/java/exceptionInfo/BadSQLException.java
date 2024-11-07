@@ -23,7 +23,7 @@ public class BadSQLException {
         }
     }
 
-    public void badSQLE2() throws IOException {
+    public void badSQLE2() throws IOException, SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(input1, input2, input3);

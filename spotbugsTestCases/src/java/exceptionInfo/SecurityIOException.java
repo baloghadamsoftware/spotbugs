@@ -1,8 +1,9 @@
 package exceptionInfo;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
-class SecurityIOException extends IOException {
-    /* ... */};
+public class SecurityIOException extends IOException {
+    public SecurityIOException(){
+        System.out.println("Hello there");
+    }
+};
