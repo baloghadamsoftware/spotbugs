@@ -72,8 +72,8 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         if (!found) {
             try {
                 try {
-                    if (this.getDottedClassName().equals("exceptionInfo.BadFileNotFoundException")
-                            && this.getMethodName().equals("badFileInputStream2")) {
+                    if (this.getDottedClassName().equals("exceptionInfo.BadBindException")
+                            && this.getMethodName().equals("badBindException2")) {
                         bw = new BufferedWriter(
                                 new OutputStreamWriter(new FileOutputStream("C:/logs/log0.txt"),
                                         StandardCharsets.UTF_8));
@@ -174,14 +174,12 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         ConstantPool cpool = this.getCode().getConstantPool();
         for (CodeException ex : exT) {
             if (ex.getStartPC() <= regIndex && regIndex < ex.getEndPC()) {
-                handled = true;
                 int index = ex.getCatchType();
                 if (index != 0) {
-                    if (!((ConstantClass) (cpool.getConstant(index))).getBytes(cpool).equals(exceptions.get(call))) {
-                        handled = false;
+                    if (((ConstantClass) (cpool.getConstant(index))).getBytes(cpool).equals(exceptions.get(call))) {
+                        handled = true;
+                        break;
                     }
-                } else {
-                    break;
                 }
             }
         }

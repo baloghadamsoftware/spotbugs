@@ -16,7 +16,7 @@ public class BadBindException {
         String ip="1";
         int port=1;
         try{
-            Socket socket=new Socket(ip,port);
+            ServerSocket socket=new ServerSocket(port);
         }
         catch(BindException e){
             throw new IOException("BindException", e);
@@ -30,7 +30,7 @@ public class BadBindException {
         String ip="1";
         int port=1;
         try{
-            Socket socket=new Socket(ip,port);
+            ServerSocket socket=new ServerSocket(port);
         }
         catch(BindException e){
             throw new IOException("BindException", e);
@@ -49,7 +49,7 @@ public class BadBindException {
         String ip="1";
         int port=1;
         try{
-            Socket socket=new Socket(ip,port);
+            ServerSocket socket=new ServerSocket(port);
         }
         catch(BindException e){
             throw new SecurityIOException();

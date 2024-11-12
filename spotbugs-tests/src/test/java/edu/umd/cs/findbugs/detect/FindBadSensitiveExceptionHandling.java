@@ -24,7 +24,7 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
         bugInstances.put("BadFileNotFoundException1", new BugInstanceMatcher[] {
             createBugInstanceMatcher("BadFileNotFoundException", "badFileInputStream1", 17) });
         bugInstances.put("BadFileNotFoundException2", new BugInstanceMatcher[] {
-            createBugInstanceMatcher("BadFileNotFoundException", "badFileInputStream2", 22) });
+            createBugInstanceMatcher("BadFileNotFoundException", "badFileInputStream2", 24) });
         bugInstances.put("BadFileNotFoundException3", new BugInstanceMatcher[] {
             createBugInstanceMatcher("BadFileNotFoundException", "badFileInputStream3", 31) });
         bugInstances.put("BadSQLException1",
@@ -34,7 +34,7 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
                     createBugInstanceMatcher("BadSQLException", "badSQLE1", 20) });
         bugInstances.put("BadSQLException2",
                 new BugInstanceMatcher[] {
-                    createBugInstanceMatcher("BadSQLException", "badSQLE2", 29) });
+                    createBugInstanceMatcher("BadSQLException", "badSQLE2", 31) });
         bugInstances.put("BadSQLException3",
                 new BugInstanceMatcher[] {
                     createBugInstanceMatcher("BadSQLException", "badSQLE3", 38) });
@@ -45,10 +45,10 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
                             12) });
         bugInstances.put("BadBindException2",
                 new BugInstanceMatcher[] { createBugInstanceMatcher("BadBindException",
-                        "badBindException2", 19) });
+                        "badBindException2", 22) });
         bugInstances.put("BadBindException3",
                 new BugInstanceMatcher[] { createBugInstanceMatcher("BadBindException",
-                        "badBindException3", 33) });
+                        "badBindException3", 36) });
         bugInstances.put("BadBindException4",
                 new BugInstanceMatcher[] { createBugInstanceMatcher("BadBindException",
                         "badBindException4", 52) });
@@ -59,17 +59,7 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
         bugInstances.put("BadInsufficientResourcesException2",
                 new BugInstanceMatcher[] {
                     createBugInstanceMatcher("BadInsufficientResourcesException", "badIRE2",
-                            17) }); // eddig van
-                                                                                                                                                                                               // lecsekkolva,
-                                                                                                                                                                                               // hogy melyik
-                                                                                                                                                                                               // sorra dobja
-                                                                                                                                                                                               // a hibát
-                                                                                                                                                                                               // (idáig
-                                                                                                                                                                                               // mindig a
-                                                                                                                                                                                               // kétes
-                                                                                                                                                                                               // exceptiont
-                                                                                                                                                                                               // dobó fv
-                                                                                                                                                                                               // hívása)
+                            17) });
         bugInstances.put("BadMissingResourceException1",
                 new BugInstanceMatcher[] {
                     createBugInstanceMatcher("BadMissingResourceException", "badMRE1", 10),
@@ -77,7 +67,7 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
                             11) });
         bugInstances.put("BadMissingResourceException2",
                 new BugInstanceMatcher[] { createBugInstanceMatcher("BadMissingResourceException",
-                        "badMRE2", 16) });
+                        "badMRE2", 19) });
         bugInstances.put("BadMissingResourceException3",
                 new BugInstanceMatcher[] { createBugInstanceMatcher("BadMissingResourceException",
                         "badMRE3", 25) });
@@ -87,10 +77,10 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
                 new BugInstanceMatcher[] { createBugInstanceMatcher("BadJarException", "badJE2", 16) });
         bugInstances.put("BadJarException12",
                 new BugInstanceMatcher[] {
-                    createBugInstanceMatcher("BadJarException", "badJE12", 24) });
+                    createBugInstanceMatcher("BadJarException", "badJE12", 25) });
         bugInstances.put("BadJarException22",
                 new BugInstanceMatcher[] {
-                    createBugInstanceMatcher("BadJarException", "badJE22", 33) });
+                    createBugInstanceMatcher("BadJarException", "badJE22", 34) });
         bugInstances.put("BadJarException13",
                 new BugInstanceMatcher[] {
                     createBugInstanceMatcher("BadJarException", "badJE13", 42) });
@@ -145,11 +135,19 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
         } */
 
         assertTrueAll(bugValues.get("BadFileNotFoundException1"));
+        assertTrueAll(bugValues.get("BadFileNotFoundException2"));
         assertTrueAll(bugValues.get("BadSQLException1"));
+        assertTrueAll(bugValues.get("BadSQLException2"));
         assertTrueAll(bugValues.get("BadBindException1"));
+        assertTrueAll(bugValues.get("BadBindException2"));
+        assertTrueAll(bugValues.get("BadBindException3"));
         //assertTrueAll(bugValues.get("BadInsufficientResourcesException1"));
         assertTrueAll(bugValues.get("BadMissingResourceException1"));
+        assertTrueAll(bugValues.get("BadMissingResourceException2"));
         assertTrueAll(bugValues.get("BadJarException1"));
+        assertTrueAll(bugValues.get("BadJarException2"));
+        assertTrueAll(bugValues.get("BadJarException12"));
+        assertTrueAll(bugValues.get("BadJarException22"));
     }
 
     private static BugInstanceMatcher createBugInstanceMatcher(String cls, String method, int line) {

@@ -8748,10 +8748,10 @@ object explicitly.</p>
   </BugPattern>
   <BugPattern type="IEH_INSECURE_EXCEPTION_HANDLING">
     <ShortDescription>Exception might expose sensitive information.</ShortDescription>
-    <LongDescription>TODO</LongDescription>
+    <LongDescription>The exception thrown, or wrapped and rethrown in this method exposes sensitive information if it reaches the user.</LongDescription>
     <Details>
       <![CDATA[<p>
-      TODO</p>
+      Failure to filter sensitive information when propagating exceptions often results in information leaks that can assist an attacker's efforts to develop further exploits. An attacker may craft input arguments to expose internal structures and mechanisms of the application. This is a known sensitive exception that might leak information if it reaches the user. For example, the FileNotFoundException message reveals information about the file system layout, and the exception type reveals the absence of the requested file.</p>
       <p>
       See SEI CERT rule <a href="https://wiki.sei.cmu.edu/confluence/display/java/ERR01-J.+Do+not+allow+exceptions+to+expose+sensitive+information">ERR01-J. Do not allow exceptions to expose sensitive information</a>.
       </p>]]>
