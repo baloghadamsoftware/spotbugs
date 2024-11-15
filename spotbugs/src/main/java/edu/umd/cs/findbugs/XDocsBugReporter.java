@@ -39,9 +39,9 @@ import edu.umd.cs.findbugs.classfile.ClassDescriptor;
  * @author Garvin LeClaire
  */
 public class XDocsBugReporter extends TextUIBugReporter {
-    final private SortedBugCollection bugCollection;
+    private final SortedBugCollection bugCollection;
 
-    final private Project project;
+    private final Project project;
 
     private final Document document;
 
@@ -90,6 +90,16 @@ public class XDocsBugReporter extends TextUIBugReporter {
         }
         bugCollection.addMissingClass(missing);
         super.reportMissingClass(ex);
+    }
+
+    @Override
+    public void reportMissingClass(ClassDescriptor classDescriptor) {
+        String missing = classDescriptor.getDottedClassName();
+        if (!isValidMissingClassMessage(missing)) {
+            return;
+        }
+        bugCollection.addMissingClass(missing);
+        super.reportMissingClass(classDescriptor);
     }
 
     @Override

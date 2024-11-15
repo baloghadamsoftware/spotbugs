@@ -36,7 +36,7 @@ import edu.umd.cs.findbugs.charsets.UTF8;
  *
  * @author David Hovemeyer
  */
-public abstract class TextUIBugReporter extends AbstractBugReporter {
+public abstract class TextUIBugReporter extends AbstractBugReporter implements ConfigurableBugReporter {
     private boolean reportStackTrace;
 
     private boolean useLongBugCodes = false;
@@ -51,7 +51,7 @@ public abstract class TextUIBugReporter extends AbstractBugReporter {
 
     protected PrintWriter outputStream = UTF8.printWriter(System.out, true);
 
-    public TextUIBugReporter() {
+    protected TextUIBugReporter() {
         reportStackTrace = true;
     }
 
@@ -144,7 +144,7 @@ public abstract class TextUIBugReporter extends AbstractBugReporter {
 
     @Override
     public void reportQueuedErrors() {
-        boolean errors = analysisErrors || missingClasses || getQueuedErrors().size() > 0;
+        boolean errors = analysisErrors || missingClasses || !getQueuedErrors().isEmpty();
         analysisErrors = missingClasses = false;
         super.reportQueuedErrors();
         if (errors) {

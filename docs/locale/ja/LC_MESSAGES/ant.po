@@ -163,7 +163,7 @@ msgid ""
 " jar files in a directory should be analyzed."
 msgstr ""
 "クラス要素の指定を追加する、または代わりに、SpotBugsタスクに解析するファイルを指定する1つまたは複数のfileset "
-"要素を含めることができます。たとえば、filesetを使用して、ディレクトリ内のすべてのjarファイルを分析するように指定できます。"
+"要素を含めることができます。たとえば、filesetを使用して、ディレクトリ内のすべてのjarファイルを解析するように指定できます。"
 
 #: ../../ant.rst:99
 msgid "auxClasspath"
