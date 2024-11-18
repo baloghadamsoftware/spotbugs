@@ -10,6 +10,7 @@ import edu.umd.cs.findbugs.ba.XMethod;
 import edu.umd.cs.findbugs.bcel.OpcodeStackDetector;
 import edu.umd.cs.findbugs.classfile.CheckedAnalysisException;
 import edu.umd.cs.findbugs.classfile.ClassDescriptor;
+import edu.umd.cs.findbugs.classfile.DescriptorFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -19,7 +20,6 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import org.apache.bcel.Const;
-import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.CodeException;
 import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.classfile.ConstantPool;
@@ -46,7 +46,7 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
     };
 
     private HashMap<String, String> exceptions = new HashMap<String, String>();
-    private ArrayList<ExceptionRethrowFinder> possibleExceptionRethrows = new ArrayList<ExceptionRethrowFinder>();
+    private RethrowFinderContainer possibleExceptionRethrows = new RethrowFinderContainer();
 
     public FindInsecureExceptionHandling(BugReporter bugReporter) {
         this.bugAccumulator = new BugAccumulator(bugReporter);
@@ -72,8 +72,8 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         if (!found) {
             try {
                 try {
-                    if (this.getDottedClassName().equals("exceptionInfo.BadBindException")
-                            && this.getMethodName().equals("badBindException2")) {
+                    if (this.getDottedClassName().equals("exceptionInfo.BadInsufficientResourcesException")
+                            && this.getMethodName().equals("badIRE1")) {
                         bw = new BufferedWriter(
                                 new OutputStreamWriter(new FileOutputStream("C:/logs/log0.txt"),
                                         StandardCharsets.UTF_8));
@@ -88,30 +88,23 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
             } catch (IOException e) {
             }
         }
-        if (seen == Const.INVOKESPECIAL || seen == Const.INVOKEVIRTUAL || seen == Const.INVOKESTATIC) {
+        if (seen == Const.INVOKESPECIAL || seen == Const.INVOKEVIRTUAL || seen == Const.INVOKESTATIC
+                || seen == Const.INVOKEINTERFACE) {
             seenInvoke = true;
         } else {
             seenInvoke = false;
         }
-
-        for (int i = 0; i < possibleExceptionRethrows.size(); i++) {
-            ExceptionRethrowFinder rf = possibleExceptionRethrows.get(i);
-            if (!rf.isFinished()) {
-                if (rf.startPC <= this.getPC())
-                    rf.sawOpcode(seen);
-            } else {
-                possibleExceptionRethrows.remove(rf);
-                i--;
-            }
-        }
+        possibleExceptionRethrows.sawOpcode(seen);
     }
 
     @Override
     public void afterOpcode(int seen) {
         super.afterOpcode(seen);
+        possibleExceptionRethrows.afterOpcode(seen);
         if (!seenInvoke)
             return;
-        if (seen == Const.INVOKESPECIAL || seen == Const.INVOKEVIRTUAL || seen == Const.INVOKESTATIC) {
+        if (seen == Const.INVOKESPECIAL || seen == Const.INVOKEVIRTUAL || seen == Const.INVOKESTATIC
+                || seen == Const.INVOKEINTERFACE) {
 
             exT = this.getCode().getExceptionTable();
 
@@ -123,7 +116,7 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
 
             try {
                 if (bw != null)
-                    bw.append("sig: " + sourceSig + " " + "\n");
+                    bw.append("sig: " + sourceSig + "  " + "\n");
             } catch (IOException e) {
             }
 
@@ -176,10 +169,18 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
             if (ex.getStartPC() <= regIndex && regIndex < ex.getEndPC()) {
                 int index = ex.getCatchType();
                 if (index != 0) {
-                    if (((ConstantClass) (cpool.getConstant(index))).getBytes(cpool).equals(exceptions.get(call))) {
-                        handled = true;
+                    String exSig = ((ConstantClass) (cpool.getConstant(index))).getBytes(cpool);
+                    ClassDescriptor expectedException = DescriptorFactory.createClassDescriptor(exceptions.get(call));
+                    try {
+                        if (isChildClassOf(expectedException, exSig)) {
+                            handled = true;
+                            break;
+                        }
+                    } catch (CheckedAnalysisException e) {
                         break;
                     }
+                } else {
+                    handled = true;
                 }
             }
         }
@@ -192,7 +193,6 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
     }
 
     private void addExceptionToCheckForRethrow(String call) {
-        Code code = this.getCode();
         int regIndex = this.getPC();
         String handledException = exceptions.get(call);
 
@@ -211,18 +211,50 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         for (int i = 1; i <= exceptions.size(); i++) {
 
             int index = exceptions.get(i - 1).getCatchType();
-            if (index == 0 || ((ConstantClass) (cpool.getConstant(index))).getBytes(cpool).equals(handledException)) {
+            try {
+                if (index != 0) {
+                    String exSig = ((ConstantClass) (cpool.getConstant(index))).getBytes(cpool);
+                    if (isChildClassOf(DescriptorFactory.createClassDescriptor(handledException), exSig)) {
 
-                possibleExceptionRethrows.add(new ExceptionRethrowFinder(regIndex, exceptions.get(i - 1).getHandlerPC(),
-                        i < exceptions.size() ? exceptions.get(i).getHandlerPC() : -1, this));
-                try {
-                    if (bw != null)
-                        bw.append("added ex to possibleExceptionRethrows, size: " + possibleExceptionRethrows.size()
-                                + "\n");
-                } catch (IOException e) {
+                        possibleExceptionRethrows.add(new ExceptionRethrowFinder(exceptions.get(i - 1).getHandlerPC(),
+                                i < exceptions.size() ? exceptions.get(i).getHandlerPC() : -1, this));
+                        try {
+                            if (bw != null)
+                                bw.append("added ex to possibleExceptionRethrows, size: "
+                                        + "\n");
+                        } catch (IOException e) {
+                        }
+                    }
+                } else {
+                    possibleExceptionRethrows.add(new ExceptionRethrowFinder(exceptions.get(i - 1).getHandlerPC(),
+                            i < exceptions.size() ? exceptions.get(i).getHandlerPC() : -1, this));
                 }
+            } catch (CheckedAnalysisException e) {
+
             }
         }
+    }
+
+    private boolean isChildClassOf(ClassDescriptor className, String superC) throws CheckedAnalysisException {
+
+        String stringClassName = className.toString();
+        int i = 0;
+
+        while (!stringClassName.equals("java/lang/Object") && i < 20) {
+            if (stringClassName.equals(superC)) {
+                return true;
+            }
+            className = className.getXClass().getSuperclassDescriptor();
+            if (className == null) {
+                break;
+            }
+            stringClassName = className.toString();
+            if (stringClassName == null) {
+                break;
+            }
+            i++;
+        }
+        return false;
     }
 
     private class ExceptionRethrowFinder {
@@ -232,14 +264,13 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
         private boolean exceptionWrapped = false;
         private boolean end = false;
         private boolean first = true;
+        private OpcodeStack.Item loadedEx = null;
 
-        private final int originalPC;
         private final int startPC;
         private final int endPC;
         private final OpcodeStackDetector original;
 
-        public ExceptionRethrowFinder(int originalPC, int startPC, int endPC, OpcodeStackDetector original) {
-            this.originalPC = originalPC;
+        public ExceptionRethrowFinder(int startPC, int endPC, OpcodeStackDetector original) {
             this.startPC = startPC;
             this.endPC = endPC;
             this.original = original;
@@ -283,29 +314,24 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
             } else {
                 if (exceptionLoaded && seen == Const.INVOKESPECIAL) {
                     ClassDescriptor className = original.getClassDescriptorOperand();
-                    String stringClassName = className.toString();
-                    int i = 0;
                     try {
-                        while (!stringClassName.equals("java/lang/Object") && i < 20) {
-                            className = className.getXClass().getSuperclassDescriptor();
-                            if (className == null)
-                                break;
-                            stringClassName = className.toString();
-                            if (stringClassName.equals("java/lang/Exception")) {
+                        if (isChildClassOf(className, "java/lang/Exception")) {
+                            if (isExOnStack()) {
                                 exceptionWrapped = true;
-                                break;
+                            } else {
+                                end = true;
                             }
-                            i++;
                         }
                     } catch (CheckedAnalysisException e) {
                         end = true;
-                    }
+                        try {
+                            if (bw != null)
+                                bw.append("CheckedAnalysisException encountered\n");
+                        } catch (IOException ex) {
 
-                } else if (seen == Const.ALOAD && varIndex == original.getRegisterOperand())
-                    exceptionLoaded = true;
-                else if (convertLoadOpToNumber(seen) == varIndex)
-                    exceptionLoaded = true;
-                else if (seen == Const.ATHROW && exceptionWrapped) {
+                        }
+                    }
+                } else if (seen == Const.ATHROW && exceptionWrapped) {
                     BugInstance bug = new BugInstance(original, "IEH_INSECURE_EXCEPTION_HANDLING", LOW_PRIORITY)
                             .addClassAndMethod(original).addString("sensitive exception rethrown");
                     bugAccumulator.accumulateBug(bug, original);
@@ -319,6 +345,21 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     end = true;
                 } else if (seen == Const.GOTO || seen == Const.RETURN) {
                     end = true;
+                }
+            }
+        }
+
+        public void afterOpcode(int seen) {
+            if ((seen == Const.ALOAD && varIndex == original.getRegisterOperand())
+                    || convertLoadOpToNumber(seen) == varIndex) {
+                exceptionLoaded = true;
+                loadedEx = stack.getStackItem(0);
+                try {
+                    if (bw != null) {
+                        bw.append("ALOAD seen, exception loaded\n");
+                    }
+                } catch (IOException e) {
+
                 }
             }
         }
@@ -350,6 +391,53 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                 return 3;
             default:
                 return -1;
+            }
+        }
+
+        private boolean isExOnStack() {
+            for (int k = 0; k < stack.getStackDepth(); k++) {
+                if (stack.getStackItem(k) == loadedEx) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    private class RethrowFinderContainer {
+        private ArrayList<ExceptionRethrowFinder> possibleExceptionRethrows = new ArrayList<ExceptionRethrowFinder>();
+
+        public RethrowFinderContainer() {
+
+        }
+
+        public void add(ExceptionRethrowFinder e) {
+            possibleExceptionRethrows.add(e);
+        }
+
+        public void sawOpcode(int seen) {
+            for (int i = 0; i < possibleExceptionRethrows.size(); i++) {
+                ExceptionRethrowFinder rf = possibleExceptionRethrows.get(i);
+                if (!rf.isFinished()) {
+                    if (rf.startPC <= getPC())
+                        rf.sawOpcode(seen);
+                } else {
+                    possibleExceptionRethrows.remove(rf);
+                    i--;
+                }
+            }
+        }
+
+        public void afterOpcode(int seen) {
+            for (int i = 0; i < possibleExceptionRethrows.size(); i++) {
+                ExceptionRethrowFinder rf = possibleExceptionRethrows.get(i);
+                if (!rf.isFinished()) {
+                    if (rf.startPC <= getPC())
+                        rf.afterOpcode(seen);
+                } else {
+                    possibleExceptionRethrows.remove(rf);
+                    i--;
+                }
             }
         }
     }

@@ -40,7 +40,7 @@ public class BadJarException {
             JarFile jf=new JarFile(file);
         }
         catch(JarException e){
-            throw new SecurityIOException();
+            throw new SecurityIOException(e);
         }
         catch(IOException e){
 
@@ -52,7 +52,7 @@ public class BadJarException {
             JarFile jf=new JarFile(input);
         }
         catch(JarException e){
-            throw new SecurityIOException();
+            throw new SecurityIOException(e);
         }
         catch(IOException e){
 

@@ -37,7 +37,7 @@ public class BadSQLException {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(input1, input2, input3);
         } catch (ClassNotFoundException | SQLException e) {
-            throw new SecurityIOException();
+            throw new SecurityIOException(e);
         }
     }
 

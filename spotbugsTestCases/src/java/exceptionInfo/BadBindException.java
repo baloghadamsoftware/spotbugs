@@ -52,7 +52,7 @@ public class BadBindException {
             ServerSocket socket=new ServerSocket(port);
         }
         catch(BindException e){
-            throw new SecurityIOException();
+            throw new SecurityIOException(e);
         }
         catch(IOException e){
 

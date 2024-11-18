@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static edu.umd.cs.findbugs.test.CountMatcher.containsExactly;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,11 +25,14 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
     public static void setup() {
 
         bugInstances.put("BadFileNotFoundException1", new BugInstanceMatcher[] {
-            createBugInstanceMatcher("BadFileNotFoundException", "badFileInputStream1", 17) });
+            createBugInstanceMatcher("BadFileNotFoundException", "badFileInputStream1", 17), createBugInstanceMatcher("BadFileNotFoundException",
+                    "badFileOutputStream1", 40), createBugInstanceMatcher("BadFileNotFoundException", "badRandomAccessFile1", 64) });
         bugInstances.put("BadFileNotFoundException2", new BugInstanceMatcher[] {
-            createBugInstanceMatcher("BadFileNotFoundException", "badFileInputStream2", 24) });
+            createBugInstanceMatcher("BadFileNotFoundException", "badFileInputStream2", 24), createBugInstanceMatcher("BadFileNotFoundException",
+                    "badFileOutputStream2", 48), createBugInstanceMatcher("BadFileNotFoundException", "badRandomAccessFile2", 72) });
         bugInstances.put("BadFileNotFoundException3", new BugInstanceMatcher[] {
-            createBugInstanceMatcher("BadFileNotFoundException", "badFileInputStream3", 31) });
+            createBugInstanceMatcher("BadFileNotFoundException", "badFileInputStream3", 31), createBugInstanceMatcher("BadFileNotFoundException",
+                    "badFileOutputStream3", 57), createBugInstanceMatcher("BadFileNotFoundException", "badRandomAccessFile3", 81) });
         bugInstances.put("BadSQLException1",
                 new BugInstanceMatcher[] { createBugInstanceMatcher("BadSQLException", "badSQLE1", 17),
                     createBugInstanceMatcher("BadSQLException", "badSQLE1", 18),
@@ -37,7 +43,7 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
                     createBugInstanceMatcher("BadSQLException", "badSQLE2", 31) });
         bugInstances.put("BadSQLException3",
                 new BugInstanceMatcher[] {
-                    createBugInstanceMatcher("BadSQLException", "badSQLE3", 38) });
+                    createBugInstanceMatcher("BadSQLException", "badSQLE3", 40) });
         bugInstances.put("BadBindException1",
                 new BugInstanceMatcher[] {
                     createBugInstanceMatcher("BadBindException", "badBindException1", 11),
@@ -51,7 +57,7 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
                         "badBindException3", 36) });
         bugInstances.put("BadBindException4",
                 new BugInstanceMatcher[] { createBugInstanceMatcher("BadBindException",
-                        "badBindException4", 52) });
+                        "badBindException4", 55) });
         bugInstances.put("BadInsufficientResourcesException1",
                 new BugInstanceMatcher[] {
                     createBugInstanceMatcher("BadInsufficientResourcesException", "badIRE1",
@@ -59,7 +65,7 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
         bugInstances.put("BadInsufficientResourcesException2",
                 new BugInstanceMatcher[] {
                     createBugInstanceMatcher("BadInsufficientResourcesException", "badIRE2",
-                            17) });
+                            20) });
         bugInstances.put("BadMissingResourceException1",
                 new BugInstanceMatcher[] {
                     createBugInstanceMatcher("BadMissingResourceException", "badMRE1", 10),
@@ -70,7 +76,7 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
                         "badMRE2", 19) });
         bugInstances.put("BadMissingResourceException3",
                 new BugInstanceMatcher[] { createBugInstanceMatcher("BadMissingResourceException",
-                        "badMRE3", 25) });
+                        "badMRE3", 28) });
         bugInstances.put("BadJarException1",
                 new BugInstanceMatcher[] { createBugInstanceMatcher("BadJarException", "badJE1", 12) });
         bugInstances.put("BadJarException2",
@@ -83,10 +89,10 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
                     createBugInstanceMatcher("BadJarException", "badJE22", 34) });
         bugInstances.put("BadJarException13",
                 new BugInstanceMatcher[] {
-                    createBugInstanceMatcher("BadJarException", "badJE13", 42) });
+                    createBugInstanceMatcher("BadJarException", "badJE13", 43) });
         bugInstances.put("BadJarException23",
                 new BugInstanceMatcher[] {
-                    createBugInstanceMatcher("BadJarException", "badJE23", 54) });
+                    createBugInstanceMatcher("BadJarException", "badJE23", 55) });
     }
 
     @Test
@@ -109,7 +115,10 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
                 temp1 = temp1.substring(0, temp1.length() - 1);
             if (temp != temp1) {
                 temp = temp1;
-                performAnalysis("exceptionInfo/" + temp + ".class");
+                performAnalysis("exceptionInfo/" + temp + ".class", "exceptionInfo/ExceptionReporter.class",
+                        "exceptionInfo/ExceptionReporterPermission.class", "exceptionInfo/FilteredSensitiveException.class",
+                        "exceptionInfo/MyExceptionReporter.class", "exceptionInfo/Reporter.class", "exceptionInfo/SecurityIOException.class",
+                        "exceptionInfo/SensitiveException1.class", "exceptionInfo/SensitiveException2.class", "exceptionInfo/MockContext.class");
             }
             BugCollection bugCollection = getBugCollection();
 
@@ -124,16 +133,6 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
             }
         }
 
-        /* try {
-            BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream("C:/Users/Loci/Documents/logs/logt.txt"),
-                            StandardCharsets.UTF_8));
-            bw.append("mukodik a logolas\n");
-            bw.append(bugValues.toString());
-        } catch (IOException e) {
-            throw new RuntimeException("Fos a fajlbairas");
-        } */
-
         assertTrueAll(bugValues.get("BadFileNotFoundException1"));
         assertTrueAll(bugValues.get("BadFileNotFoundException2"));
         assertTrueAll(bugValues.get("BadSQLException1"));
@@ -141,13 +140,26 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
         assertTrueAll(bugValues.get("BadBindException1"));
         assertTrueAll(bugValues.get("BadBindException2"));
         assertTrueAll(bugValues.get("BadBindException3"));
-        //assertTrueAll(bugValues.get("BadInsufficientResourcesException1"));
+        assertTrueAll(bugValues.get("BadInsufficientResourcesException1"));
+        assertTrueAll(bugValues.get("BadInsufficientResourcesException2"));
         assertTrueAll(bugValues.get("BadMissingResourceException1"));
         assertTrueAll(bugValues.get("BadMissingResourceException2"));
         assertTrueAll(bugValues.get("BadJarException1"));
         assertTrueAll(bugValues.get("BadJarException2"));
         assertTrueAll(bugValues.get("BadJarException12"));
         assertTrueAll(bugValues.get("BadJarException22"));
+    }
+
+    @Test
+    void testGoodExceptionHandling() {
+        performAnalysis("exceptionInfo/GoodMissingResourceException.class", "exceptionInfo/GoodJarException.class",
+                "exceptionInfo/GoodInsufficientResourcesException.class", "exceptionInfo/GoodFileNotFoundException.class",
+                "exceptionInfo/GoodBindException.class",
+                "exceptionInfo/GoodSQLException.class", "exceptionInfo/ExceptionReporter.class",
+                "exceptionInfo/ExceptionReporterPermission.class", "exceptionInfo/FilteredSensitiveException.class",
+                "exceptionInfo/MyExceptionReporter.class", "exceptionInfo/Reporter.class", "exceptionInfo/SecurityIOException.class",
+                "exceptionInfo/SensitiveException1.class", "exceptionInfo/SensitiveException2.class");
+        assertNumOfIEHBugs(0);
     }
 
     private static BugInstanceMatcher createBugInstanceMatcher(String cls, String method, int line) {
@@ -164,5 +176,11 @@ public class FindBadSensitiveExceptionHandling extends AbstractIntegrationTest {
         for (Boolean bug : arr) {
             Assertions.assertTrue(bug);
         }
+    }
+
+    private void assertNumOfIEHBugs(int num) {
+        final BugInstanceMatcher bugTypeMatcher = new BugInstanceMatcherBuilder()
+                .bugType("IEH_INSECURE_EXCEPTION_HANDLING").build();
+        assertThat(getBugCollection(), containsExactly(num, bugTypeMatcher));
     }
 }

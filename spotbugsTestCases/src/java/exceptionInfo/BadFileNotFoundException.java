@@ -30,7 +30,7 @@ class BadFileNotFoundException {
       FileInputStream fis = new FileInputStream(System.getenv("APPDATA") + input);
     } catch (FileNotFoundException e) {
       // Log the exception
-      throw new SecurityIOException();
+      throw new SecurityIOException(e);
     }
   }
 
@@ -54,7 +54,7 @@ class BadFileNotFoundException {
       FileOutputStream fos = new FileOutputStream(System.getenv("APPDATA") + input);
     } catch (FileNotFoundException e) {
       // Log the exception
-      throw new SecurityIOException();
+      throw new SecurityIOException(e);
     }
   }
 
@@ -78,7 +78,7 @@ class BadFileNotFoundException {
       RandomAccessFile fos = new RandomAccessFile(new File(System.getenv("APPDATA") + input), "r");
     } catch (FileNotFoundException e) {
       // Log the exception
-      throw new SecurityIOException();
+      throw new SecurityIOException(e);
     }
   }
 }

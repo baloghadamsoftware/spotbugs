@@ -25,7 +25,7 @@ public class BadMissingResourceException {
             ResourceBundle resources=ResourceBundle.getBundle("resources");
         }
         catch(MissingResourceException e){
-            throw new SecurityIOException();
+            throw new SecurityIOException(e);
         }
     }
 }

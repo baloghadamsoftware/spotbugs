@@ -8,16 +8,16 @@ public class BadInsufficientResourcesException {
     
     public void badIRE1()throws NamingException{
         Context ctxt=new InitialContext();
-        ctxt.lookup(input); //interface ezért nem dob bugot, konkrét implementációt kéne ide írni
+        ctxt.lookup(input);
     }
 
     public void badIRE2()throws SecurityIOException{
         try{
-            Context ctxt=new InitialContext();
+            Context ctxt=new MockContext();
             ctxt.lookup(input);
         }
         catch(InsufficientResourcesException e){
-            throw new SecurityIOException();
+            throw new SecurityIOException(e);
         }
         catch(NamingException e){
 
