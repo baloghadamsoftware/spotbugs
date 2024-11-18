@@ -5,7 +5,6 @@ import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;
 import edu.umd.cs.findbugs.OpcodeStack;
-import edu.umd.cs.findbugs.SourceLineAnnotation;
 import edu.umd.cs.findbugs.ba.XMethod;
 import edu.umd.cs.findbugs.bcel.OpcodeStackDetector;
 import edu.umd.cs.findbugs.classfile.CheckedAnalysisException;
@@ -13,7 +12,6 @@ import edu.umd.cs.findbugs.classfile.ClassDescriptor;
 import edu.umd.cs.findbugs.classfile.DescriptorFactory;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,11 +26,7 @@ import org.apache.bcel.classfile.JavaClass;
 public class FindInsecureExceptionHandling extends OpcodeStackDetector implements Detector {
 
     private final BugAccumulator bugAccumulator;
-    private ArrayList<OpcodeStack.Item> cpStack = null;
-    private OpcodeStack.Item lastStackItem = null;
     private boolean seenInvoke = false;
-    private BufferedWriter bw = null;
-    private boolean found = false;
     private CodeException[] exT = null;
 
     private String[] SensitiveCalls = { "java.net.ServerSocket.<init>", "java.net.ServerSocket.bind",
@@ -69,25 +63,6 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
 
     @Override
     public void sawOpcode(int seen) {
-        if (!found) {
-            try {
-                try {
-                    if (this.getDottedClassName().equals("exceptionInfo.BadInsufficientResourcesException")
-                            && this.getMethodName().equals("badIRE1")) {
-                        bw = new BufferedWriter(
-                                new OutputStreamWriter(new FileOutputStream("C:/logs/log0.txt"),
-                                        StandardCharsets.UTF_8));
-                        bw.append("mukodik a logolas\n");
-                        found = true;
-                    }
-                } catch (IOException e) {
-                }
-                if (bw != null)
-                    bw.append(this.getDottedClassName() + " "
-                            + this.getMethodName() + "\n");
-            } catch (IOException e) {
-            }
-        }
         if (seen == Const.INVOKESPECIAL || seen == Const.INVOKEVIRTUAL || seen == Const.INVOKESTATIC
                 || seen == Const.INVOKEINTERFACE) {
             seenInvoke = true;
@@ -114,35 +89,17 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
 
             String sourceSig = className + "." + methodName;
 
-            try {
-                if (bw != null)
-                    bw.append("sig: " + sourceSig + "  " + "\n");
-            } catch (IOException e) {
-            }
-
             Optional<String> possibleSensitiveCall = Arrays.stream(SensitiveCalls)
                     .filter(call -> sourceSig.equals(call))
                     .findAny();
 
             if (possibleSensitiveCall.isPresent()) {
                 String call = possibleSensitiveCall.get();
-                try {
-                    if (bw != null)
-                        bw.append("right signature found\n");
-                } catch (IOException e) {
-                }
 
                 if (!isHandled(call)) {
-                    BugInstance bug = new BugInstance(this, "IEH_INSECURE_EXCEPTION_HANDLING", LOW_PRIORITY)
+                    BugInstance bug = new BugInstance(this, "IEH_INSECURE_EXCEPTION_HANDLING", NORMAL_PRIORITY)
                             .addClassAndMethod(this).addCalledMethod(method).addString("has no handler");
                     bugAccumulator.accumulateBug(bug, this);
-                    try {
-                        if (bw != null)
-                            bw.append("bugReported: " + bug.toString() + "line: "
-                                    + SourceLineAnnotation.fromVisitedInstruction(this).toString()
-                                    + "\n");
-                    } catch (IOException e) {
-                    }
                 } else {
                     addExceptionToCheckForRethrow(call);
                 }
@@ -153,12 +110,6 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
     @Override
     public void visitAfter(JavaClass obj) {
         bugAccumulator.reportAccumulatedBugs();
-        try {
-            if (bw != null)
-                bw.close();
-            found = false;
-        } catch (IOException e) {
-        }
     }
 
     private boolean isHandled(String call) {
@@ -183,11 +134,6 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     handled = true;
                 }
             }
-        }
-        try {
-            if (bw != null)
-                bw.append("exception handled: " + handled + "\n");
-        } catch (IOException e) {
         }
         return handled;
     }
@@ -218,12 +164,6 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
 
                         possibleExceptionRethrows.add(new ExceptionRethrowFinder(exceptions.get(i - 1).getHandlerPC(),
                                 i < exceptions.size() ? exceptions.get(i).getHandlerPC() : -1, this));
-                        try {
-                            if (bw != null)
-                                bw.append("added ex to possibleExceptionRethrows, size: "
-                                        + "\n");
-                        } catch (IOException e) {
-                        }
                     }
                 } else {
                     possibleExceptionRethrows.add(new ExceptionRethrowFinder(exceptions.get(i - 1).getHandlerPC(),
@@ -305,11 +245,6 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     if (varIndex == -1)
                         end = true;
                 }
-                try {
-                    if (bw != null)
-                        bw.append("ASTORE seen, varIndex: " + varIndex + "\n");
-                } catch (IOException e) {
-                }
                 this.first = false;
             } else {
                 if (exceptionLoaded && seen == Const.INVOKESPECIAL) {
@@ -324,24 +259,11 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                         }
                     } catch (CheckedAnalysisException e) {
                         end = true;
-                        try {
-                            if (bw != null)
-                                bw.append("CheckedAnalysisException encountered\n");
-                        } catch (IOException ex) {
-
-                        }
                     }
                 } else if (seen == Const.ATHROW && exceptionWrapped) {
-                    BugInstance bug = new BugInstance(original, "IEH_INSECURE_EXCEPTION_HANDLING", LOW_PRIORITY)
+                    BugInstance bug = new BugInstance(original, "IEH_INSECURE_EXCEPTION_HANDLING", NORMAL_PRIORITY)
                             .addClassAndMethod(original).addString("sensitive exception rethrown");
                     bugAccumulator.accumulateBug(bug, original);
-                    try {
-                        if (bw != null)
-                            bw.append("bugReported: " + bug.toString() + "line: "
-                                    + SourceLineAnnotation.fromVisitedInstruction(original).toString()
-                                    + "\n");
-                    } catch (IOException e) {
-                    }
                     end = true;
                 } else if (seen == Const.GOTO || seen == Const.RETURN) {
                     end = true;
@@ -354,13 +276,6 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     || convertLoadOpToNumber(seen) == varIndex) {
                 exceptionLoaded = true;
                 loadedEx = stack.getStackItem(0);
-                try {
-                    if (bw != null) {
-                        bw.append("ALOAD seen, exception loaded\n");
-                    }
-                } catch (IOException e) {
-
-                }
             }
         }
 
