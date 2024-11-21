@@ -201,9 +201,9 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
 
         private int varIndex = -1;
         private boolean exceptionLoaded = false;
-        private boolean exceptionWrapped = false;
         private boolean end = false;
         private boolean first = true;
+        private boolean justWrapped = false;
         private OpcodeStack.Item loadedEx = null;
 
         private final int startPC;
@@ -251,8 +251,8 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     ClassDescriptor className = original.getClassDescriptorOperand();
                     try {
                         if (isChildClassOf(className, "java/lang/Exception")) {
-                            if (isExOnStack()) {
-                                exceptionWrapped = true;
+                            if (isExWrapped(className.toString())) {
+                                justWrapped = true;
                             } else {
                                 end = true;
                             }
@@ -260,7 +260,7 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     } catch (CheckedAnalysisException e) {
                         end = true;
                     }
-                } else if (seen == Const.ATHROW && exceptionWrapped) {
+                } else if (seen == Const.ATHROW && isExOnStack()) {
                     BugInstance bug = new BugInstance(original, "IEH_INSECURE_EXCEPTION_HANDLING", NORMAL_PRIORITY)
                             .addClassAndMethod(original).addString("sensitive exception rethrown");
                     bugAccumulator.accumulateBug(bug, original);
@@ -276,6 +276,10 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
                     || convertLoadOpToNumber(seen) == varIndex) {
                 exceptionLoaded = true;
                 loadedEx = stack.getStackItem(0);
+            }
+            if (justWrapped) {
+                loadedEx = stack.getStackItem(0);
+                justWrapped = false;
             }
         }
 
@@ -307,6 +311,22 @@ public class FindInsecureExceptionHandling extends OpcodeStackDetector implement
             default:
                 return -1;
             }
+        }
+
+        private boolean isExWrapped(String wrapper) {
+            for (int k = 0; k < stack.getStackDepth(); k++) {
+                try {
+                    if (stack.getStackItem(k) == loadedEx) {
+                        return true;
+                    } else if (stack.getStackItem(k).getJavaClass() != null
+                            && stack.getStackItem(k).getJavaClass().getClassName().equals(wrapper)) {
+                        return false;
+                    }
+                } catch (ClassNotFoundException e) {
+                    continue;
+                }
+            }
+            return false;
         }
 
         private boolean isExOnStack() {
