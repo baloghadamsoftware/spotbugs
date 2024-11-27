@@ -1741,6 +1741,16 @@ factory pattern to create these objects.</p>
       ]]>
     </Details>
   </Detector>
+  <Detector class="edu.umd.cs.findbugs.detect.FindInsecureExceptionHandling">
+    <Details>
+      <![CDATA[
+            <p>Detector for patterns where poorly handled or unhandled exceptions might expose sensitive information.</p>
+            <p>
+               TODO
+            </p>
+      ]]>
+    </Details>
+  </Detector>
   <Detector class="edu.umd.cs.findbugs.detect.ReflectionIncreaseAccessibility">
     <Details>
       <![CDATA[
@@ -8800,6 +8810,17 @@ object explicitly.</p>
       </p>]]>
     </Details>
   </BugPattern>
+  <BugPattern type="IEH_INSECURE_EXCEPTION_HANDLING">
+    <ShortDescription>Exception might expose sensitive information.</ShortDescription>
+    <LongDescription>The exception thrown, or wrapped and rethrown in this method exposes sensitive information if it reaches the user.</LongDescription>
+    <Details>
+      <![CDATA[<p>
+      Failure to filter sensitive information when propagating exceptions often results in information leaks that can assist an attacker's efforts to develop further exploits. An attacker may craft input arguments to expose internal structures and mechanisms of the application. This is a known sensitive exception that might leak information if it reaches the user. For example, the FileNotFoundException message reveals information about the file system layout, and the exception type reveals the absence of the requested file.</p>
+      <p>
+      See SEI CERT rule <a href="https://wiki.sei.cmu.edu/confluence/display/java/ERR01-J.+Do+not+allow+exceptions+to+expose+sensitive+information">ERR01-J. Do not allow exceptions to expose sensitive information</a>.
+      </p>]]>
+    </Details>
+  </BugPattern>
 
   <BugPattern type="REFLC_REFLECTION_MAY_INCREASE_ACCESSIBILITY_OF_CLASS">
     <ShortDescription>Public method uses reflection to create a class it gets in its parameter which could increase the accessibility of any class</ShortDescription>
@@ -9479,6 +9500,7 @@ Using floating-point variables should not be used as loop counters, as they are 
   <BugCode abbrev="DL">Unintended contention or possible deadlock due to locking on shared objects</BugCode>
   <BugCode abbrev="JUA">Problems in JUnit Assertions</BugCode>
   <BugCode abbrev="EOS">Bad End of Stream check</BugCode>
+  <BugCode abbrev="IEH">Insecure Exception Handling</BugCode>
   <BugCode abbrev="REFLC">Reflection increasing accessibility of classes</BugCode>
   <BugCode abbrev="REFLF">Reflection increasing accessibility of fields</BugCode>
   <BugCode abbrev="MC">Dangerous call to overridable method</BugCode>
